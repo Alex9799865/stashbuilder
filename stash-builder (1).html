@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Void Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060608;--surface:#0c0c12;--card:#10101a;--border:#1e1e2e;--accent:#9d6fff;--accent2:#c084fc;--text:#ddd8f0;--muted:#5a5470;--danger:#f04060;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(157,111,255,.08) 0%,transparent 60%),linear-gradient(rgba(157,111,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(157,111,255,.015) 1px,transparent 1px);background-size:100% 100%,50px 50px,50px 50px;pointer-events:none;z-index:0;}
+.header{position:sticky;top:0;z-index:100;background:rgba(6,6,8,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 18px;display:flex;align-items:center;gap:12px;height:52px;}
+.logo{font-size:17px;font-weight:800;color:var(--accent);white-space:nowrap;}.logo span{color:var(--text);}
+.hdiv{width:1px;height:26px;background:var(--border);}
+.hactions{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.btn{font-family:'Share Tech Mono',monospace;font-size:10px;padding:5px 12px;border-radius:5px;cursor:pointer;border:1px solid transparent;font-weight:400;transition:all .15s;white-space:nowrap;letter-spacing:.5px;}
+.btn-p{background:var(--accent);color:#fff;border-color:var(--accent);}.btn-p:hover{background:var(--accent2);border-color:var(--accent2);}
+.btn-s{background:transparent;color:var(--text);border-color:var(--border);}.btn-s:hover{border-color:var(--accent);color:var(--accent);}
+.btn-r{background:#7c3aed22;color:#a78bfa;border-color:#7c3aed55;}.btn-r:hover{background:#7c3aed44;border-color:#a78bfa;}
+.btn-v{background:transparent;color:var(--accent);border-color:var(--accent);}.btn-v:hover{background:var(--accent);color:#fff;}
+.modesw{display:flex;gap:2px;background:var(--surface);border-radius:6px;padding:3px;border:1px solid var(--border);}
+.msb{font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 12px;border-radius:4px;cursor:pointer;border:none;background:transparent;color:var(--muted);font-weight:400;transition:all .13s;letter-spacing:.5px;}
+.msb.on{background:linear-gradient(135deg,#1a1a2e,#16162a);color:var(--accent);box-shadow:0 0 0 1px var(--accent)44,0 2px 8px rgba(157,111,255,.15);}
+.layout{display:grid;grid-template-columns:265px 1fr 290px;height:calc(100vh - 52px);position:relative;z-index:1;}
+.panel-left{border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.phdr{padding:12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+.ptitle{font-size:9px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);font-family:'Share Tech Mono',monospace;opacity:.7;}
+.sbox{position:relative;}
+.sbox input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:7px 10px 7px 28px;color:var(--text);font-size:11px;font-family:'Share Tech Mono',monospace;outline:none;transition:border-color .15s;}
+.sbox input:focus{border-color:var(--accent);}
+.si{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:12px;}
+.cfs{display:flex;flex-wrap:wrap;gap:3px;}
+.cb{font-size:9px;padding:2px 7px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .12px;}
+.cb.active,.cb:hover{border-color:currentColor;background:color-mix(in srgb,currentColor 15%,transparent);}
+.cb[data-c="Bags & Gadgets"]{color:#818cf8;}
+.cb[data-c="Construction"]{color:#c084fc;}
+.cb[data-c="Consumables"]{color:#34d399;}
+.cb[data-c="Fishing"]{color:#38bdf8;}
+.cb[data-c="Loot"]{color:#fb923c;}
+.cb[data-c="Toys"]{color:#f472b6;}
+.cb[data-c="Weapons"]{color:#f87171;}
+.cb[data-c="All"]{color:var(--text);}
+.ilist{overflow-y:auto;flex:1;padding:6px;}
+.ilist::-webkit-scrollbar{width:3px;}
+.ilist::-webkit-scrollbar-thumb{background:var(--border);}
+.icard{padding:8px 10px;border-radius:5px;border:1px solid transparent;cursor:pointer;transition:all .12s;margin-bottom:3px;display:flex;align-items:center;gap:8px;background:var(--surface);}
+.icard:hover{border-color:var(--border);background:var(--card);}
+.icard.lo-target{border-color:var(--accent)!important;background:color-mix(in srgb,var(--accent) 8%,var(--surface))!important;}
+.tip{position:fixed;z-index:9999;background:#0e0e1a;border:1px solid var(--border);border-radius:6px;padding:7px 10px;max-width:200px;pointer-events:none;opacity:0;transition:opacity .12s;box-shadow:0 4px 20px rgba(0,0,0,.7);}
+.tip.show{opacity:1;}
+.tip-name{font-size:11px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.tip-cat{font-size:9px;font-family:'Share Tech Mono',monospace;margin-bottom:5px;}
+.tip-desc{font-size:10px;color:var(--muted);line-height:1.5;}
+.warn-badge{font-size:8px;font-family:'Share Tech Mono',monospace;background:rgba(240,64,96,.15);border:1px solid var(--danger);color:var(--danger);border-radius:3px;padding:1px 5px;flex-shrink:0;}
+.idot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.iinfo{flex:1;min-width:0;}
+.iname{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.iid{font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.iadd{width:20px;height:20px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--accent);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;}
+.iadd:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.panel-center{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);}
+.ctop{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+/* STASH */
+.earea{flex:1;overflow-y:auto;padding:10px;}
+.earea::-webkit-scrollbar{width:4px;}
+.earea::-webkit-scrollbar-thumb{background:var(--border);}
+.tlitem{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px;overflow:hidden;}
+.tlhdr{padding:9px 12px;display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;}
+.tlhdr:hover{background:rgba(157,111,255,.03);}
+.arr{font-size:9px;color:var(--muted);transition:transform .15s;flex-shrink:0;line-height:1;}
+.arr.open{transform:rotate(90deg);}
+.tldot{width:8px;height:8px;flex-shrink:0;}
+.tlname{font-size:12px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bdg{font-size:8px;font-family:'Share Tech Mono',monospace;background:var(--border);border-radius:3px;padding:1px 5px;color:var(--muted);flex-shrink:0;}
+.arow{display:flex;gap:3px;flex-shrink:0;}
+.ib{width:22px;height:22px;border-radius:3px;border:1px solid var(--border);background:transparent;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;transition:all .12s;color:var(--muted);}
+.ib:hover{background:var(--card);color:var(--text);}
+.ib.del:hover{background:var(--danger);color:#fff;border-color:var(--danger);}
+.ib.add:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+.ib.copy{color:#818cf8;}.ib.copy:hover{background:#818cf8;color:#fff;border-color:#818cf8;}
+.ib.paste{color:var(--muted);}.ib.paste:hover{background:#34d399;color:#000;border-color:#34d399;}
+.ib.paste.has-clip{color:#34d399;border-color:#34d399;}
+.ib.dup{color:#c084fc;}.ib.dup:hover{background:#c084fc;color:#fff;border-color:#c084fc;}
+.ib.rnd{color:#fb923c;}.ib.rnd:hover{background:#fb923c;color:#000;border-color:#fb923c;}
+.drag-handle{cursor:grab;color:var(--muted);font-size:11px;padding:0 2px;flex-shrink:0;user-select:none;}
+.drag-handle:active{cursor:grabbing;}
+.tlitem.drag-over{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.tlbody{padding:0 12px 10px;display:flex;flex-direction:column;gap:8px;}
+.srow{display:flex;align-items:center;gap:8px;}
+.srow label{font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;white-space:nowrap;}
+.srow select,.tlbody select{background:var(--card);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:4px;font-size:10px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;flex:1;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.field{display:flex;flex-direction:column;gap:3px;}
+.field label{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:.5px;}
+.field input[type=number]{background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:4px;font-size:11px;font-family:'Share Tech Mono',monospace;outline:none;width:100%;}
+.field input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
+.frow{display:flex;align-items:center;gap:4px;}
+.fval{font-size:10px;font-family:'Share Tech Mono',monospace;color:var(--accent);width:28px;text-align:right;flex-shrink:0;}
+.hsw{width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,.1);flex-shrink:0;}
+.chwrap{border-top:1px solid var(--border);background:rgba(0,0,0,.25);}
+.chlist{padding:8px;}
+.chrow{background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:5px;overflow:hidden;}
+.chhdr{padding:7px 10px;display:flex;align-items:center;gap:6px;cursor:pointer;}
+.chhdr:hover{background:rgba(255,255,255,.01);}
+.chdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.chname{font-size:11px;font-weight:600;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chid{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;flex-shrink:0;}
+.chbody{padding:8px 10px 10px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:6px;}
+.chbody select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:4px;font-size:10px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;}
+.cfrow{display:flex;align-items:center;gap:6px;}
+.cflbl{font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;width:58px;flex-shrink:0;}
+.cfin{flex:1;}.cfin input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer;}
+.cfval{font-size:9px;font-family:'Share Tech Mono',monospace;color:var(--accent);width:24px;text-align:right;flex-shrink:0;}
+.nwrap{border-top:1px solid var(--border);margin-top:4px;padding:6px 0 0;}
+.nhdr{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.nadd{font-size:9px;padding:2px 6px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--accent);cursor:pointer;font-family:'Share Tech Mono',monospace;}
+.nadd:hover{background:var(--accent);color:#fff;}
+.ni{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:5px 8px;margin-bottom:3px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.nsel{background:var(--card);border:1px solid var(--border);color:var(--text);padding:3px 5px;border-radius:3px;font-size:9px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;flex:1;min-width:0;}
+.nnum{background:var(--card);border:1px solid var(--border);color:var(--text);padding:3px 4px;border-radius:3px;font-size:9px;font-family:'Share Tech Mono',monospace;outline:none;width:50px;text-align:center;}
+.nlbl{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+.ndel{width:16px;height:16px;border-radius:3px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;}
+.ndel:hover{color:var(--danger);}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;color:var(--muted);gap:8px;border:1px dashed var(--border);border-radius:8px;}
+/* LOADOUT */
+.lo-area{flex:1;overflow-y:auto;padding:12px;}
+.lo-area::-webkit-scrollbar{width:4px;}
+.lo-area::-webkit-scrollbar-thumb{background:var(--border);}
+.lo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.lo-slot{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s,box-shadow .15s;}
+.lo-slot.filled{border-color:color-mix(in srgb,var(--accent) 30%,var(--border));}
+.lo-slot.selecting{border-color:var(--accent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent),0 0 20px rgba(157,111,255,.1);}
+.lo-shdr{padding:9px 12px;display:flex;align-items:center;gap:7px;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.lo-sname{font-size:10px;font-weight:700;letter-spacing:.5px;flex:1;}
+.lo-badge{font-size:8px;font-family:'Share Tech Mono',monospace;padding:2px 6px;border-radius:3px;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);}
+.lo-clr{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:3px;transition:color .12s;}
+.lo-clr:hover{color:var(--danger);}
+.lo-sbody{padding:10px;display:flex;flex-direction:column;gap:8px;}
+.lo-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 10px;gap:5px;border:1px dashed var(--border);border-radius:6px;cursor:pointer;transition:all .13s;color:var(--muted);}
+.lo-empty:hover,.selecting .lo-empty{border-color:var(--accent);color:var(--accent);}
+.lo-empty span{font-size:9px;font-family:'Share Tech Mono',monospace;}
+.lo-irow{display:flex;align-items:center;gap:7px;}
+.lo-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.lo-iname{font-size:11px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lo-isel{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:4px;font-size:10px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;}
+.lo-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.lo-field{display:flex;flex-direction:column;gap:3px;}
+.lo-field label{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:.5px;}
+.lo-field input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
+.lo-field input[type=number]{background:var(--card);border:1px solid var(--border);color:var(--text);padding:3px 5px;border-radius:3px;font-size:10px;font-family:'Share Tech Mono',monospace;outline:none;width:100%;}
+.lo-frow{display:flex;align-items:center;gap:4px;}
+.lo-fval{font-size:10px;font-family:'Share Tech Mono',monospace;color:var(--accent);width:28px;text-align:right;flex-shrink:0;}
+.lo-hsw{width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,.1);flex-shrink:0;}
+.lo-children{border-top:1px solid var(--border);padding-top:8px;}
+.lo-ch-hdr{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;}
+.lo-ch-list{display:flex;flex-direction:column;gap:6px;}
+.lo-ch-item{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:7px 8px;display:flex;flex-direction:column;gap:6px;}
+.lo-ch-top{display:flex;align-items:center;gap:6px;}
+.lo-ch-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.lo-ch-sel{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:3px 5px;border-radius:3px;font-size:9px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;min-width:0;}
+.lo-ch-del{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:10px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color .12s;}
+.lo-ch-del:hover{color:var(--danger);}
+.lo-ch-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
+.lo-cf{display:flex;flex-direction:column;gap:2px;}
+.lo-cf label{font-size:7px;color:var(--muted);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:.5px;}
+.lo-cf input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
+.lo-cf input[type=number]{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:2px 4px;border-radius:4px;font-size:9px;font-family:'Share Tech Mono',monospace;outline:none;width:100%;}
+.lo-cfrow{display:flex;align-items:center;gap:3px;}
+.lo-cfval{font-size:9px;font-family:'Share Tech Mono',monospace;color:var(--accent);width:24px;text-align:right;flex-shrink:0;}
+.lo-cfhsw{width:12px;height:12px;border-radius:2px;border:1px solid rgba(255,255,255,.1);flex-shrink:0;}
+.lo-addch{width:100%;margin-top:4px;font-size:9px;padding:4px;border-radius:4px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .13s;}
+.lo-addch:hover{border-color:var(--accent);color:var(--accent);}
+/* BLUEPRINT */
+.bp-area{flex:1;overflow-y:auto;padding:12px;}
+.bp-area::-webkit-scrollbar{width:4px;}
+.bp-area::-webkit-scrollbar-thumb{background:var(--border);}
+.bp-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;}
+.bp-meta-row{display:flex;align-items:center;gap:6px;}
+.bp-meta-row label{font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;white-space:nowrap;}
+.bp-meta-row input{background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:4px;font-size:11px;font-family:'Share Tech Mono',monospace;outline:none;flex:1;}
+.bp-node{background:var(--surface);border:1px solid #3b82f633;border-radius:8px;margin-bottom:8px;overflow:hidden;}
+.bp-nhdr{padding:9px 12px;display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;}
+.bp-nhdr:hover{background:rgba(59,130,246,.05);}
+.bp-dot{width:8px;height:8px;border-radius:50%;background:#3b82f6;flex-shrink:0;}
+.bp-name{font-size:12px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#93c5fd;}
+.bp-body{padding:0 12px 12px;}
+.bp-isel{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:4px;font-size:10px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;margin-bottom:8px;}
+.bp-id-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;}
+.bp-id-row label{font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;white-space:nowrap;}
+.bp-id-row input{background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:4px;font-size:10px;font-family:'Share Tech Mono',monospace;outline:none;flex:1;}
+.bp-children{border-top:1px solid #3b82f622;padding-top:8px;margin-top:4px;}
+.bp-ch-hdr{font-size:8px;color:#60a5fa;font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.bp-ch-item{background:var(--card);border:1px solid #3b82f622;border-radius:6px;padding:8px;margin-bottom:5px;}
+.bp-ch-top{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.bp-ch-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;flex-shrink:0;}
+.bp-ch-name{font-size:10px;font-weight:700;flex:1;color:#93c5fd;}
+.bp-ch-del{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:10px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;transition:color .12s;}
+.bp-ch-del:hover{color:var(--danger);}
+.bp-ch-sel{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:3px 6px;border-radius:3px;font-size:9px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;margin-bottom:5px;}
+.bp-vec{display:flex;align-items:center;gap:4px;margin-bottom:4px;}
+.bp-vec label{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;width:50px;flex-shrink:0;}
+.bp-vec input{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:3px 5px;border-radius:3px;font-size:9px;font-family:'Share Tech Mono',monospace;outline:none;flex:1;min-width:0;}
+.bp-nested{border-top:1px dashed #3b82f622;padding-top:6px;margin-top:6px;}
+.bp-nested-item{background:rgba(59,130,246,.05);border:1px solid #3b82f622;border-radius:4px;padding:6px;margin-bottom:4px;}
+.bp-add-ch,.bp-add-nested{width:100%;margin-top:4px;font-size:9px;padding:4px;border-radius:4px;border:1px dashed #3b82f644;background:transparent;color:#60a5fa;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .13s;}
+.bp-add-ch:hover,.bp-add-nested:hover{border-color:#3b82f6;background:rgba(59,130,246,.08);}
+/* LOADOUT BLUEPRINT */
+.lbp-area{flex:1;overflow-y:auto;padding:12px;}
+.lbp-area::-webkit-scrollbar{width:4px;}
+.lbp-area::-webkit-scrollbar-thumb{background:var(--border);}
+.lbp-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;background:var(--surface);border:1px solid #9d6fff33;border-radius:6px;margin-bottom:10px;}
+.lbp-meta-row{display:flex;align-items:center;gap:6px;}
+.lbp-meta-row label{font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;white-space:nowrap;}
+.lbp-meta-row input{background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:4px;font-size:11px;font-family:'Share Tech Mono',monospace;outline:none;flex:1;}
+.lbp-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.lbp-slot{background:var(--surface);border:1px solid #9d6fff33;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s,box-shadow .15s;}
+.lbp-slot.filled{border-color:#9d6fff66;}
+.lbp-slot.selecting{border-color:var(--accent);box-shadow:0 0 0 1px #9d6fff33,0 0 20px rgba(157,111,255,.12);}
+.lbp-shdr{padding:9px 12px;display:flex;align-items:center;gap:7px;background:var(--card);border-bottom:1px solid #9d6fff22;flex-shrink:0;}
+.lbp-sname{font-size:10px;font-weight:700;letter-spacing:.5px;flex:1;color:#c4b5fd;}
+.lbp-badge{font-size:8px;font-family:'Share Tech Mono',monospace;padding:2px 6px;border-radius:3px;color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);}
+.lbp-clr{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;transition:color .12s;}
+.lbp-clr:hover{color:var(--danger);}
+.lbp-sbody{padding:10px;display:flex;flex-direction:column;gap:8px;}
+.lbp-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 10px;gap:5px;border:1px dashed #9d6fff44;border-radius:6px;cursor:pointer;transition:all .13s;color:var(--muted);}
+.lbp-empty:hover,.lbp-slot.selecting .lbp-empty{border-color:var(--accent);color:var(--accent);}
+.lbp-empty span{font-size:9px;font-family:'Share Tech Mono',monospace;}
+.lbp-irow{display:flex;align-items:center;gap:7px;}
+.lbp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.lbp-iname{font-size:11px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lbp-isel{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:4px;font-size:10px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;}
+.lbp-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px;}
+.lbp-field{display:flex;flex-direction:column;gap:3px;}
+.lbp-field label{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:.5px;}
+.lbp-field input[type=range]{accent-color:var(--accent);width:100%;cursor:pointer;}
+.lbp-field input[type=number]{background:var(--card);border:1px solid var(--border);color:var(--text);padding:3px 5px;border-radius:3px;font-size:10px;font-family:'Share Tech Mono',monospace;outline:none;width:100%;}
+.lbp-frow{display:flex;align-items:center;gap:4px;}
+.lbp-fval{font-size:10px;font-family:'Share Tech Mono',monospace;color:var(--accent);width:28px;text-align:right;flex-shrink:0;}
+.lbp-bptoggle{display:flex;align-items:center;gap:6px;padding:5px 0;}
+.lbp-bptoggle label{font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+.lbp-bptoggle input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:pointer;}
+.lbp-children{border-top:1px solid #9d6fff22;padding-top:8px;margin-top:4px;}
+.lbp-ch-hdr{font-size:8px;color:#c4b5fd;font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;}
+.lbp-ch-list{display:flex;flex-direction:column;gap:5px;}
+.lbp-ch-item{background:var(--card);border:1px solid #9d6fff22;border-radius:5px;padding:7px 8px;display:flex;flex-direction:column;gap:5px;}
+.lbp-ch-top{display:flex;align-items:center;gap:6px;}
+.lbp-ch-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.lbp-ch-sel{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:3px 5px;border-radius:3px;font-size:9px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;min-width:0;}
+.lbp-ch-bp{font-size:8px;font-family:'Share Tech Mono',monospace;padding:2px 5px;border-radius:3px;border:1px solid #9d6fff44;background:transparent;color:#9d6fff;cursor:pointer;transition:all .12s;}
+.lbp-ch-bp.on{background:#9d6fff22;border-color:var(--accent);color:var(--accent2);}
+.lbp-ch-del{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:10px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color .12s;}
+.lbp-ch-del:hover{color:var(--danger);}
+.lbp-addch{width:100%;margin-top:4px;font-size:9px;padding:4px;border-radius:4px;border:1px dashed #9d6fff44;background:transparent;color:#9d6fff;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .13s;}
+.lbp-addch:hover{border-color:var(--accent);color:var(--accent);}
+/* LOADOUT TEMPLATE */
+.lt-area{flex:1;overflow-y:auto;padding:12px;}
+.lt-area::-webkit-scrollbar{width:4px;}
+.lt-area::-webkit-scrollbar-thumb{background:var(--border);}
+.lt-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:10px;}
+.lt-meta label{font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace;white-space:nowrap;}
+.lt-meta input{background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:4px;font-size:11px;font-family:'Share Tech Mono',monospace;outline:none;width:140px;}
+.lt-slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.lt-slot{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .15s;}
+.lt-slot.filled{border-color:color-mix(in srgb,#a78bfa 30%,var(--border));}
+.lt-slot.selecting{border-color:#a78bfa;box-shadow:0 0 0 1px color-mix(in srgb,#a78bfa 25%,transparent);}
+.lt-shdr{padding:9px 12px;display:flex;align-items:center;gap:7px;background:var(--card);border-bottom:1px solid var(--border);}
+.lt-sname{font-size:10px;font-weight:700;flex:1;}
+.lt-badge{font-size:8px;font-family:'Share Tech Mono',monospace;padding:2px 6px;border-radius:3px;color:#a78bfa;background:color-mix(in srgb,#a78bfa 12%,transparent);}
+.lt-clr{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;width:18px;height:18px;display:flex;align-items:center;justify-content:center;transition:color .12s;}
+.lt-clr:hover{color:var(--danger);}
+.lt-sbody{padding:10px;display:flex;flex-direction:column;gap:7px;}
+.lt-empty{display:flex;align-items:center;justify-content:center;padding:18px;border:1px dashed var(--border);border-radius:6px;cursor:pointer;transition:all .13s;color:var(--muted);}
+.lt-empty:hover,.lt-slot.selecting .lt-empty{border-color:#a78bfa;color:#a78bfa;}
+.lt-empty span{font-size:9px;font-family:'Share Tech Mono',monospace;}
+.lt-irow{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.lt-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.lt-iname{font-size:11px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lt-isel{width:100%;background:var(--card);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:4px;font-size:10px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;margin-bottom:5px;}
+.lt-ch-hdr{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;border-top:1px solid var(--border);padding-top:7px;}
+.lt-ch-list{display:flex;flex-direction:column;gap:4px;}
+.lt-ch-item{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:5px 8px;display:flex;align-items:center;gap:6px;}
+.lt-ch-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.lt-ch-sel{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:3px 5px;border-radius:3px;font-size:9px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;}
+.lt-ch-del{border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:10px;width:16px;height:16px;display:flex;align-items:center;justify-content:center;transition:color .12s;}
+.lt-ch-del:hover{color:var(--danger);}
+.lt-addch{width:100%;margin-top:4px;font-size:9px;padding:4px;border-radius:4px;border:1px dashed var(--border);background:transparent;color:var(--muted);cursor:pointer;font-family:'Share Tech Mono',monospace;transition:all .13s;}
+.lt-addch:hover{border-color:#a78bfa;color:#a78bfa;}
+/* RIGHT PANEL */
+.panel-right{display:flex;flex-direction:column;overflow:hidden;}
+.jtbar{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.jst{font-size:9px;font-family:'Share Tech Mono',monospace;color:var(--accent);margin-left:auto;opacity:.7;}
+.jprev{flex:1;overflow-y:auto;padding:12px;font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.7;white-space:pre-wrap;word-break:break-all;color:#8a8aaa;background:var(--surface);margin:8px;border-radius:8px;border:1px solid var(--border);}
+.jprev::-webkit-scrollbar{width:3px;}
+.jprev::-webkit-scrollbar-thumb{background:var(--border);}
+.j-key{color:#818cf8;}.j-str{color:#86efac;}.j-num{color:#fb923c;}.j-bool{color:#f472b6;}.j-null{color:#5a5470;}
+.sbar{padding:8px 14px;border-top:1px solid var(--border);display:flex;gap:14px;flex-shrink:0;}
+.stat{display:flex;flex-direction:column;}
+.slbl{font-size:8px;color:var(--muted);font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:1px;}
+.sval{font-size:15px;font-weight:800;color:var(--accent);}
+/* MODAL */
+.movl{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.movl.open{display:flex;}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:10px;width:520px;max-width:95vw;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:0 0 40px rgba(157,111,255,.08);}
+.mtitle{font-size:17px;font-weight:800;color:var(--accent);}
+.modal textarea{background:var(--surface);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:10px;font-family:'Share Tech Mono',monospace;font-size:10px;height:180px;resize:vertical;outline:none;width:100%;}
+.modal textarea:focus{border-color:var(--accent);}
+.mact{display:flex;gap:8px;justify-content:flex-end;}
+.merr{color:var(--danger);font-size:10px;font-family:'Share Tech Mono',monospace;min-height:14px;}
+.hidden{display:none!important;}
+select option{background:var(--card);}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--accent);color:#fff;padding:9px 16px;border-radius:5px;font-size:11px;font-family:'Share Tech Mono',monospace;z-index:9999;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;}
+#toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="modesw">
+    <button class="msb on" id="modeStash" onclick="setMode('stash')">Stash</button>
+    <button class="msb" id="modeLoadout" onclick="setMode('loadout')">Loadout</button>
+    <button class="msb" id="modeBlueprint" onclick="setMode('blueprint')">Blueprint</button>
+    <button class="msb" id="modeLobp" onclick="setMode('lobp')">LO Blueprint</button>
+    <button class="msb" id="modeLtmpl" onclick="setMode('ltmpl')">LO Template</button>
+  </div>
+  <div class="hactions">
+    <button class="btn btn-r" id="btnRandomize" onclick="randomizeAll()">Randomize</button>
+    <button class="btn btn-s" onclick="openImport()">Import</button>
+    <button class="btn btn-s" onclick="clearAll()">Clear</button>
+    <button class="btn btn-p" onclick="copyJSON()">Copy JSON</button>
+    <button class="btn btn-v" onclick="downloadJSON()">Download</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="panel-left">
+    <div class="phdr">
+      <div class="ptitle">Item Library</div>
+      <div class="sbox"><span class="si">S</span><input type="text" id="searchInput" placeholder="Search items..." oninput="renderList()"></div>
+      <div class="cfs" id="catFilters"></div>
+    </div>
+    <div class="ilist" id="itemList"></div>
+  </aside>
+
+  <main class="panel-center" id="stashView">
+    <div class="ctop">
+      <div class="ptitle">Stash Items</div>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-s" style="font-size:9px;padding:4px 10px" onclick="collapseAll()">- All</button>
+        <button class="btn btn-s" style="font-size:9px;padding:4px 10px" onclick="expandAll()">+ All</button>
+        <button class="btn btn-s" style="font-size:9px;padding:4px 10px" onclick="autoStashPos()">Auto Pos</button>
+        <button class="btn btn-s" style="font-size:9px;padding:4px 10px" onclick="addTL(false)">+ Item</button>
+        <button class="btn btn-s" style="font-size:9px;padding:4px 10px;color:#60a5fa;border-color:#60a5fa" onclick="addTL(true)">+ Container</button>
+      </div>
+    </div>
+    <div class="earea" id="earea"></div>
+  </main>
+
+  <main class="panel-center hidden" id="loadoutView">
+    <div class="ctop">
+      <div class="ptitle">Loadout Slots</div>
+      <div id="loHint" style="margin-left:auto;font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace">Click a slot, then pick from library</div>
+    </div>
+    <div class="lo-area"><div class="lo-grid" id="loGrid"></div></div>
+  </main>
+
+  <main class="panel-center hidden" id="blueprintView">
+    <div class="ctop">
+      <div class="ptitle">Blueprint</div>
+      <div style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-s" style="font-size:9px;padding:4px 10px;color:#3b82f6;border-color:#3b82f6" onclick="bpAddChild()">+ Child</button>
+      </div>
+    </div>
+    <div class="bp-area" id="bpArea"></div>
+  </main>
+
+  <main class="panel-center hidden" id="lobpView">
+    <div class="ctop">
+      <div class="ptitle">Loadout Blueprint</div>
+      <div id="lobpHint" style="margin-left:auto;font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace">Click a slot, then pick from library</div>
+    </div>
+    <div class="lbp-area"><div class="lbp-slots" id="lobpGrid"></div></div>
+  </main>
+
+  <main class="panel-center hidden" id="ltmplView">
+    <div class="ctop">
+      <div class="ptitle">Loadout Template</div>
+      <div id="ltHint" style="margin-left:auto;font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace">Click a slot, then pick from library</div>
+    </div>
+    <div class="lt-area" id="ltArea"></div>
+  </main>
+
+  <aside class="panel-right">
+    <div class="jtbar"><div class="ptitle">JSON Output</div><span class="jst">LIVE</span></div>
+    <div class="jprev" id="jprev"></div>
+    <div class="sbar" id="sbar"></div>
+  </aside>
+</div>
+
+<div id="toast"></div>
+
+<!-- Modals -->
+<div class="movl" id="importModal">
+  <div class="modal">
+    <div class="mtitle">Import Stash JSON</div>
+    <textarea id="importTA" placeholder="Paste stash JSON here..."></textarea>
+    <div class="merr" id="importError"></div>
+    <div class="mact">
+      <button class="btn btn-s" onclick="closeModal('importModal')">Cancel</button>
+      <button class="btn btn-p" onclick="doStashImport()">Import</button>
+    </div>
+  </div>
+</div>
+<div class="movl" id="loImportModal">
+  <div class="modal">
+    <div class="mtitle">Import Loadout JSON</div>
+    <textarea id="loImportTA" placeholder="Paste loadout JSON here..."></textarea>
+    <div class="merr" id="loImportError"></div>
+    <div class="mact">
+      <button class="btn btn-s" onclick="closeModal('loImportModal')">Cancel</button>
+      <button class="btn btn-p" onclick="doLoadoutImport()">Import</button>
+    </div>
+  </div>
+</div>
+<div class="movl" id="bpImportModal">
+  <div class="modal">
+    <div class="mtitle">Import Blueprint JSON</div>
+    <textarea id="bpImportTA" placeholder="Paste blueprint JSON here..."></textarea>
+    <div class="merr" id="bpImportError"></div>
+    <div class="mact">
+      <button class="btn btn-s" onclick="closeModal('bpImportModal')">Cancel</button>
+      <button class="btn btn-p" onclick="doBpImport()">Import</button>
+    </div>
+  </div>
+</div>
+<div class="movl" id="ltImportModal">
+  <div class="modal">
+    <div class="mtitle">Import Loadout Template JSON</div>
+    <textarea id="ltImportTA" placeholder="Paste loadout template JSON here..."></textarea>
+    <div class="merr" id="ltImportError"></div>
+    <div class="mact">
+      <button class="btn btn-s" onclick="closeModal('ltImportModal')">Cancel</button>
+      <button class="btn btn-p" onclick="doLtImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<div class="movl" id="lobpImportModal">
+  <div class="modal">
+    <div class="mtitle">Import Loadout (for Blueprint)</div>
+    <textarea id="lobpImportTA" placeholder="Paste loadout JSON here — items will be loaded as blueprint slots..."></textarea>
+    <div class="merr" id="lobpImportError"></div>
+    <div class="mact">
+      <button class="btn btn-s" onclick="closeModal('lobpImportModal')">Cancel</button>
+      <button class="btn btn-p" onclick="doLobpImport()">Import</button>
+    </div>
+  </div>
+</div>
+
+<div id="tooltip" class="tip"></div>
+
+<script>
+const ITEMS=[{id:"item_ac_cola",name:"AC Cola",cat:"Loot",sub:"",desc:"Tastes just like the real thing."},{id:"item_alphablade",name:"Alpha Blade",cat:"Weapons",sub:"Melee",desc:"Like the stars in the sky. Caution: Also as hot as them."},{id:"item_anti_gravity_grenade",name:"Anti Gravity Grenade",cat:"Weapons",sub:"Explosives",desc:"Briefly disables gravity within a small area."},{id:"item_apple",name:"Apple",cat:"Loot",sub:"",desc:"An apple a day keeps the doctor away!"},{id:"item_arrow",name:"Arrow",cat:"Weapons",sub:"Ammo",desc:"Can be attached to the crossbow."},{id:"item_arrow_bomb",name:"Bomb Arrow",cat:"Weapons",sub:"Ammo",desc:"An arrow with a bomb attached. Hit something with it and watch it explode."},{id:"item_arrow_heart",name:"Heart Arrow",cat:"Weapons",sub:"Ammo",desc:"A love-themed arrow that will have your targets seeing hearts! "},{id:"item_arrow_lightbulb",name:"Lightbulb Arrow",cat:"Weapons",sub:"Ammo",desc:"An arrow that illuminates the surrounding area."},{id:"item_arrow_teleport",name:"Teleport Arrow",cat:"Weapons",sub:"Ammo",desc:"Teleport more accurately with the precision of an arrow."},{id:"item_axe",name:"Chaos Axe",cat:"Weapons",sub:"Melee",desc:"Even gods falter before you."},{id:"item_backpack",name:"Backpack",cat:"Bags & Gadgets",sub:"Bags",desc:"The perfect adventurers pack. Has a base capacity of 10 items."},{id:"item_backpack_fish",name:"Fish Backpack",cat:"Bags & Gadgets",sub:"Bags",desc:"This backpack is a 'reel' catch!"},{id:"item_backpack_large_base",name:"Large Backpack",cat:"Bags & Gadgets",sub:"Bags",desc:"A massive pack with an extended capacity. Has a base capacity of 20 items."},{id:"item_backpack_large_basketball",name:"Large Basketball Print Backpack",cat:"Bags & Gadgets",sub:"Bags",desc:"A massive pack with an extended capacity. Has a base capacity of 20 items."},{id:"item_backpack_large_clover",name:"Large Clover Print Backpack",cat:"Bags & Gadgets",sub:"Bags",desc:"A massive pack with an extended capacity. Has a base capacity of 20 items."},{id:"item_backpack_monkey",name:"Monkey Backpack",cat:"Bags & Gadgets",sub:"Bags",desc:"Your new monkey backpack friend"},{id:"item_backpack_small_base",name:"Small Backpack",cat:"Bags & Gadgets",sub:"Bags",desc:"Has a base capacity of 5 items."},{id:"item_bait_beetle",name:"Beetle",cat:"Fishing",sub:"Bait",desc:"That insect bait looks so rock-hard even the fish would be like, 'Yeah, no thanks.'"},{id:"item_bait_fly",name:"Fly",cat:"Fishing",sub:"Bait",desc:"It's tiny and looks totally useless - are there even fish out there who'd be into this?"},{id:"item_bait_glowworm",name:"Glow Worm",cat:"Fishing",sub:"Bait",desc:"Any sane fish would flee, but its glow is so intense you won't even need to watch your float."},{id:"item_bait_magmar_ball",name:"Magmar Ball",cat:"Fishing",sub:"Bait",desc:"Ordinary fish probably wouldn't even dare come close to it. Warning: extremely hot."},{id:"item_bait_mouse_trap",name:"Mouse Trap",cat:"Fishing",sub:"Bait",desc:"A mouse trap... or should we call this a fish trap?"},{id:"item_bait_sardine",name:"Sardine",cat:"Fishing",sub:"Bait",desc:"A sardine turned into bait. Most fish pass it by... a few can't resist."},{id:"item_bait_shell",name:"Shell",cat:"Fishing",sub:"Bait",desc:"Just a shell. Looks useless to most fish... irresistible to the right kind."},{id:"item_bait_starfish",name:"Starfish",cat:"Fishing",sub:"Bait",desc:"A strangely cheerful starfish. Most fish stay away. A few are immediately intrigued."},{id:"item_bait_wallet",name:"Wallet",cat:"Fishing",sub:"Bait",desc:"A wallet as bait. Ordinary fish stay away. Money-loving ones swim right in."},{id:"item_balloon",name:"Balloon",cat:"Toys",sub:"Misc",desc:"A tool that helps you defy gravity...but not too much."},{id:"item_balloon_heart",name:"Heart Balloon",cat:"Toys",sub:"Misc",desc:"Heart shaped balloon! For when love has you floating on air!"},{id:"item_bamboo_fishing_rod",name:"Bamboo Fishing Rod",cat:"Fishing",sub:"FishingRod",desc:"Looks like trash, feels flimsy, but it's tougher than it looks and won't break - even in the worst hands."},{id:"item_banana_chips",name:"Banana Chips",cat:"Consumables",sub:"Food",desc:"A tasty snack. Contains 1% banana juice."},{id:"item_baseball_bat",name:"Baseball Bat",cat:"Weapons",sub:"Melee",desc:"A weapon that's great for hitting monsters out of the park."},{id:"item_basic_fishing_rod",name:"Basic Fishing Rod",cat:"Fishing",sub:"FishingRod",desc:"A boring but reliable tool - no flair, no features, just sturdy enough to hold a fish if you manage to stay awake."},{id:"item_beans",name:"Can of Beans",cat:"Consumables",sub:"Food",desc:"High in fiber."},{id:"item_big_cup",name:"Big Cup",cat:"Loot",sub:"",desc:"Much more valuable than a little cup. Turn it in for Nuts."},{id:"item_bighead_larva",name:"BigHead Larva",cat:"Loot",sub:"",desc:"Wiggling larva. Eating it does... nothing? Probably."},{id:"item_bloodlust_vial",name:"Bloodlust Vial",cat:"Loot",sub:"",desc:"Drink it for speed and lightness on your feet."},{id:"item_boombox",name:"Boombox",cat:"Loot",sub:"",desc:"Carry this device around for vibes on the go!"},{id:"item_boombox_fishing",name:"Fishing Boombox",cat:"Toys",sub:"Misc",desc:"For a good ol' time with the bois."},{id:"item_boombox_neon",name:"Neon Boombox",cat:"Toys",sub:"Instruments",desc:"Carry this device around for vibes on the go!"},{id:"item_boomerang",name:"Boomerang",cat:"Weapons",sub:"Projectile",desc:"Always comes back. Maybe."},{id:"item_box_fan",name:"Box Fan",cat:"Bags & Gadgets",sub:"Movement",desc:"It blows air."},{id:"item_brain_chunk",name:"Brain Matter",cat:"Loot",sub:"",desc:"A chunk of hyper intelligence."},{id:"item_broccoli_grenade",name:"Mega Broccoli Bomb",cat:"Consumables",sub:"Sus",desc:"A dangerous-looking vegetable...bomb."},{id:"item_broccoli_shrink_grenade",name:"Micro Broccoli Bomb",cat:"Consumables",sub:"Sus",desc:"A dangerous-looking vegetable...bomb."},{id:"item_broom",name:"Broom",cat:"Bags & Gadgets",sub:"Movement",desc:"Hop on and hold tight. Sweeps you off your feet."},{id:"item_broom_halloween",name:"Wicked Broom",cat:"Loot",sub:"",desc:"Classic ride, now bewitched. Hop on and cackle through the night."},{id:"item_bubble_gun",name:"Bubble Gun",cat:"Toys",sub:"Misc",desc:"Makes bubbles."},{id:"item_bubble_staff",name:"Bubble Staff",cat:"Weapons",sub:"Melee",desc:"One swing, a sky full of bubbles."},{id:"item_burrito",name:"Burrito",cat:"Consumables",sub:"Food",desc:"Eat burrito, become torpedo."},{id:"item_butcherpipe",name:"Butcher Pipe",cat:"Weapons",sub:"Melee",desc:"A plumber's best friend, and a trusty partner for makeshift self-defense."},{id:"item_butcherspear",name:"Butcher Spear",cat:"Weapons",sub:"Melee",desc:"A bloody themed spear. Appears to have already seen some action."},{id:"item_butchersword",name:"Butcher Sword",cat:"Weapons",sub:"Melee",desc:"Each strike fuels its hunger for fresh meat!"},{id:"item_calculator",name:"Calculator",cat:"Loot",sub:"",desc:"Helpful for number crunching"},{id:"item_cardboard_box",name:"Cardboard Box",cat:"Bags & Gadgets",sub:"Recon",desc:"A box. You get this sudden urge to hide inside it."},{id:"item_cardboard_dragon_body",name:"Cardboard Dragon Body",cat:"Bags & Gadgets",sub:"Recon",desc:"Celebration is at hand with this majestic piece of cardboard."},{id:"item_cardboard_dragon_head",name:"Cardboard Dragon Head",cat:"Bags & Gadgets",sub:"Recon",desc:"Celebration is at hand with this majestic piece of cardboard."},{id:"item_carrot",name:"Carrot",cat:"Loot",sub:"",desc:"Vitamin C-maxxing"},{id:"item_ceo_plaque",name:"CEO Plaque",cat:"Loot",sub:"",desc:"This belongs to the big man upstairs."},{id:"item_chakra",name:"Chakra",cat:"Weapons",sub:"Melee",desc:"Display elegance with a flurry of blades."},{id:"item_clapper",name:"Clapper",cat:"Toys",sub:"Misc",desc:"Lights, camera, action!"},{id:"item_cluster_grenade",name:"Cluster Grenade",cat:"Weapons",sub:"Explosives",desc:"One grenade, multiple explosions. It's like a fireworks show but with more danger."},{id:"item_coconut_shell",name:"Coconut Shell",cat:"Loot",sub:"",desc:"Clank them around as if you are a knight riding a horse."},{id:"item_company_ration",name:"Company Ration",cat:"Consumables",sub:"Food",desc:"Experimental sustenance. Eat for a boost in productivity. May have side effects."},{id:"item_company_ration_heal",name:"Company Ration",cat:"Consumables",sub:"Food",desc:"Optimized for survival. Contents undisclosed."},{id:"item_cracker",name:"Cracker",cat:"Loot",sub:"",desc:"Some dry biscuits that would pair well with soup."},{id:"item_crate",name:"Crate",cat:"Loot",sub:"",desc:"Turn this in for Nuts."},{id:"item_crossbow",name:"Crossbow",cat:"Weapons",sub:"Projectile",desc:"Attach almost anything and launch to create improvised weapons."},{id:"item_crossbow_heart",name:"Heart Crossbow",cat:"Weapons",sub:"Projectile",desc:"A love-themed crossbow...because nothing says romance like a high-velocity declaration of love!"},{id:"item_crowbar",name:"Crowbar",cat:"Weapons",sub:"Melee",desc:"A versatile tool for smashing things and fighting monsters."},{id:"item_cube_frame",name:"Cube Frame",cat:"Construction",sub:"Materials",desc:"A cube frame for creating cubiod contraptions."},{id:"item_cubetrident",name:"Cube Trident",cat:"Weapons",sub:"Melee",desc:"You can almost feel the ocean when touching it... A pixelated one, anyway."},{id:"item_cutie_dead",name:"AN152 Dead Body",cat:"Loot",sub:"",desc:"Still kinda cute."},{id:"item_d20",name:"D20",cat:"Loot",sub:"",desc:"A 20 sided die."},{id:"item_deadmans_draw",name:"Deadman's Draw",cat:"Toys",sub:"Misc",desc:"Feeling lucky, partner? Then DRAW! Yeehaw!"},{id:"item_disc",name:"DVD",cat:"Loot",sub:"",desc:"May or may not contain a ripped copy of ROTK."},{id:"item_disposable_camera",name:"Disposable Camera",cat:"Bags & Gadgets",sub:"Tech",desc:"A digital camera. Take pictures of monsters and sell the camera for profit."},{id:"item_dragons_claw",name:"Dragon's Claw",cat:"Weapons",sub:"Melee",desc:"For when your fists aren't sharp enough."},{id:"item_drill",name:"BFD9000",cat:"Weapons",sub:"Melee",desc:"When pickaxes aren't enough, you bring the BFD."},{id:"item_drill_fists",name:"Drill Fist",cat:"Weapons",sub:"Melee",desc:"For punching.. or for mining..? We're not sure either"},{id:"item_drill_neon",name:"BFD9000-N",cat:"Weapons",sub:"Melee",desc:"When pickaxes aren't enough, you bring the BFD-N."},{id:"item_dwarven_hammer",name:"Dwarven Hammer",cat:"Weapons",sub:"Melee",desc:"As stout and sturdy as a Dwarf. The perfect weapon for smashing rocks and heads!"},{id:"item_dynamite",name:"Dynamite",cat:"Weapons",sub:"Explosives",desc:"For when subtlety just isn't an option. Light the fuse and throw!"},{id:"item_dynamite_cube",name:"Cube Dynamite",cat:"Weapons",sub:"Explosives",desc:"For when subtlety just isn't an option. Light the fuse and throw!"},{id:"item_egg_easter_blue",name:"Blue Bunny Egg",cat:"Construction",sub:"Materials",desc:"It's a baby blue egg. "},{id:"item_egg_easter_red",name:"Red Bunny Egg",cat:"Construction",sub:"Materials",desc:"It's a spicy red egg. "},{id:"item_egg_easter_yellow",name:"Yellow Bunny Egg",cat:"Construction",sub:"Materials",desc:"It's a festive yellow egg. "},{id:"item_electrical_tape",name:"Electrical Tape",cat:"Loot",sub:"",desc:"Electrically resistant tape."},{id:"item_eraser",name:"Eraser",cat:"Loot",sub:"",desc:"Used to erase your mistakes."},{id:"item_eye_googly",name:"Googly Eye",cat:"Construction",sub:"Materials",desc:"Perfect for making your own friends. Surely they won't steal your loot."},{id:"item_finger_board",name:"Finger Board",cat:"Loot",sub:"",desc:"Great for impressing your friends."},{id:"item_fish_anglerfish",name:"Anglerfish",cat:"Fishing",sub:"Fish",desc:"If you think this fellow is ugly, just wait until you see their big brother!"},{id:"item_fish_big_shark",name:"Big Shark",cat:"Fishing",sub:"Fish",desc:"Big shark with a big attitude"},{id:"item_fish_boomfish",name:"Boomfish",cat:"Fishing",sub:"Fish",desc:"Handle with care. This fish has a very short fuse and a bad temper."},{id:"item_fish_boot",name:"Boot",cat:"Fishing",sub:"Fish",desc:"A useless old boot. Who even wears these in the water?"},{id:"item_fish_bottled_message",name:"Bottled Message",cat:"Fishing",sub:"Fish",desc:"Contains cryptic hints..."},{id:"item_fish_carp",name:"Carp",cat:"Fishing",sub:"Fish",desc:"A standard fish. It's not great, but it's honest work."},{id:"item_fish_chewna",name:"Chewna",cat:"Fishing",sub:"Fish",desc:"Have you ever seen such a creature? You can almost feel the radiation in your hands."},{id:"item_fish_clam_hookshot",name:"Clam Hookshot",cat:"Bags & Gadgets",sub:"Movement",desc:"A living clam that functions as a hookshot. Snappy and useful!"},{id:"item_fish_cowfish",name:"Cowfish",cat:"Fishing",sub:"Fish",desc:"MOO! MOO! Not that kinda cow...? Honestly, why even call it a cowfish."},{id:"item_fish_crappie",name:"Crappie",cat:"Fishing",sub:"Fish",desc:"The most common fish. It looks a bit disappointed in you."},{id:"item_fish_crispie",name:"Crispie",cat:"Fishing",sub:"Fish",desc:"It's kinda crunchy in the hand... It's warm too — not painful though."},{id:"item_fish_cube",name:"Cursed Cubefish",cat:"Fishing",sub:"Fish",desc:"Dense like a cannonball and curses all it touches. If spotted, knots mysteriously untie themselves, vessels capsize, and all ham sandwiches vanish."},{id:"item_fish_diamond_jade_koi",name:"Diamond Jade Koi",cat:"Fishing",sub:"Fish",desc:"The ultimate catch. Studded with diamonds and glowing with luxury."},{id:"item_fish_dollar_bill",name:"Dollar Bill",cat:"Fishing",sub:"Fish",desc:"A fish wearing money as fashion. It thinks it's a high-roller."},{id:"item_fish_dragonfish",name:"Dragon Fish",cat:"Fishing",sub:"Fish",desc:"Legend has it that once a year, this legendary fish emerges to roam the molten seas."},{id:"item_fish_fishsword",name:"Fishsword",cat:"Weapons",sub:"Melee",desc:"A razor-sharp fish. Don't grab the wrong end of this 'weapon.'"},{id:"item_fish_ghost_sword",name:"Spectral Swordfish",cat:"Fishing",sub:"Fish",desc:"Faster than its own ghost and feeds on memories. The chill down your neck means you forgot that you saw one swim by."},{id:"item_fish_gold_fish",name:"Gold Fish",cat:"Fishing",sub:"Fish",desc:"It sparkles brilliantly! Disclaimer: Not actually made of real gold."},{id:"item_fish_hydracarp",name:"Hydracarp",cat:"Fishing",sub:"Fish",desc:"One to be a killer, who will unleash bubbles. One to be a monarch, whose crown will drown them. One to be wild, who can't remember more than three seconds."},{id:"item_fish_irontusk",name:"Irontusk",cat:"Fishing",sub:"Fish",desc:"Sharp teeth and an even sharper mind. This fish will play tricks on you so it can eat your organs."},{id:"item_fish_kissy",name:"Kissy",cat:"Fishing",sub:"Fish",desc:"Smack smack smack..."},{id:"item_fish_license_plate",name:"License Plate",cat:"Fishing",sub:"Fish",desc:"A rusty plate. Wait... did I need a license to fish here?"},{id:"item_fish_magma_carp",name:"Magma Carp",cat:"Fishing",sub:"Fish",desc:"This guy smells like charcoal and smokes like a BBQ."},{id:"item_fish_nebula_fish",name:"Nebula",cat:"Fishing",sub:"Fish",desc:"Looking at this fish... you see the fabric of the universe — swimming its way into all organic life."},{id:"item_fish_nutfish",name:"Nutfish",cat:"Fishing",sub:"Fish",desc:"Looks like a literal nut. Use this to fix your broken machinery."},{id:"item_fish_pufferfish",name:"Pufferfish",cat:"Fishing",sub:"Fish",desc:"Likes to get big and up in your business. Watch your hands — these fish are no joke!"},{id:"item_fish_rainbow_trout",name:"Rainbow Trout",cat:"Fishing",sub:"Fish",desc:"EVERY COLOUR OF THE RAINBOW! LET IT RAIN!"},{id:"item_fish_redacted",name:"[REDACTED]",cat:"Fishing",sub:"Fish",desc:"[DO NOT PRINT ORIGIN OF FISH. UNDER NDA.]"},{id:"item_fish_rotten_fish",name:"Rotten Fish",cat:"Fishing",sub:"Fish",desc:"Stinks like a corpse. Legend says Megalodon likes this kind of thing."},{id:"item_fish_salmon",name:"Salmon",cat:"Fishing",sub:"Fish",desc:"A healthy jumper. Tastes much better than it looks."},{id:"item_fish_salmonster",name:"Salmonster",cat:"Fishing",sub:"Fish",desc:"SNIFF SNIFF. SNIFF SNIFF. It's trying to smell you... Weird..."},{id:"item_fish_scaldfish",name:"Scaldfish",cat:"Fishing",sub:"Fish",desc:"This little fellow is hot, hot, hot in the hands! Ouch, don't hold it for too long!"},{id:"item_fish_seahorse",name:"Seahorse",cat:"Fishing",sub:"Fish",desc:"Ride the waves with the one and only seahorse. Brave. Strong. Noble."},{id:"item_fish_seamine",name:"Seamine",cat:"Fishing",sub:"Fish",desc:"IT'S GOING TO EXPLODE! RUN! Or sell it if you're brave."},{id:"item_fish_shellfish_shield",name:"Shellfish Shield",cat:"Weapons",sub:"Melee",desc:"A sturdy shield made of some fishes. You can definitely block with this."},{id:"item_fish_spicy_salmon",name:"Spicy Salmon",cat:"Fishing",sub:"Fish",desc:"Mmm, it's a spicy boi — and don't rub your eyes until you wash your hands!"},{id:"item_fish_teeth",name:"Meateating Spiritfish",cat:"Fishing",sub:"Fish",desc:"This insatiable spirit is always hungry for meat. If your gyatt goes cold, get out of the water!"},{id:"item_fish_triclops",name:"Triclops",cat:"Fishing",sub:"Fish",desc:"A beast, plain and simple. Found only in the darkest depths. Not sure how you caught this."},{id:"item_fish_tuna",name:"Tuna",cat:"Fishing",sub:"Fish",desc:"A massive fish. It looks like it took a wrong turn from the ocean."},{id:"item_fish_yellowcake",name:"Yellowcake",cat:"Fishing",sub:"Fish",desc:"His eyes look like he's seen things. That's gotta suck with eight eyes."},{id:"item_fishing_terminal_bait_button",name:"Fishing Terminal Bait Button",cat:"Loot",sub:"",desc:"Weird button... where should id put in?"},{id:"item_flamethrower",name:"Flamethrower",cat:"Weapons",sub:"Explosives",desc:"Flaming hot!"},{id:"item_flamethrower_skull",name:"Flamethrower Skull",cat:"Loot",sub:"",desc:"A skull that throws flames."},{id:"item_flamethrower_skull_ruby",name:"Ruby Flamethrower Skull",cat:"Loot",sub:"",desc:"A skull that throws flames. Super Rare."},{id:"item_flaregun",name:"Flaregun",cat:"Weapons",sub:"Projectile",desc:"Fires a single use flare that lights up the environment and stuns enemies caught in the explosion."},{id:"item_flashbang",name:"Flashbang",cat:"Weapons",sub:"Explosives",desc:"Blind and deafen your enemies with an explosion and flash of bright light!"},{id:"item_flashlight",name:"Flashlight",cat:"Bags & Gadgets",sub:"Lights",desc:"Perfect for lighting up spooky corridors and ominous caverns."},{id:"item_flashlight_mega",name:"Mega Flashlight",cat:"Bags & Gadgets",sub:"Lights",desc:"Flood the room with light. World's brightest flashlight."},{id:"item_flashlight_red",name:"Red Flashlight",cat:"Loot",sub:"",desc:"Perfect for lighting up spooky corridors and ominous caverns. Now in red!"},{id:"item_floppy3",name:"Floppy Disc",cat:"Loot",sub:"",desc:"A relic of a bygone era."},{id:"item_floppy5",name:"Floppy Disc",cat:"Loot",sub:"",desc:"A relic of a bygone era."},{id:"item_football",name:"Football",cat:"Toys",sub:"Misc",desc:"For throwing, catching, and sometimes bonking someone on the head."},{id:"item_friend_launcher",name:"Friend Launcher",cat:"Bags & Gadgets",sub:"Movement",desc:"Convince your friend to grab on. Then charge it up and launch them."},{id:"item_frying_pan",name:"Frying Pan",cat:"Weapons",sub:"Melee",desc:"A weapon that's good for cooking eggs and cracking skulls."},{id:"item_gameboy",name:"Game Box",cat:"Loot",sub:"",desc:"Can play the latest games."},{id:"item_glitched_banana",name:"Glitchy Banana",cat:"Loot",sub:"",desc:"The result of a spectacularly failed attempt at playing God. Know your place."},{id:"item_glowing_fishing_rod",name:"Neon Fishing Rod",cat:"Fishing",sub:"FishingRod",desc:"This is it. The ultimate fishing rod. Use its glowing power wisely."},{id:"item_glowstick",name:"Glowstick",cat:"Bags & Gadgets",sub:"Lights",desc:"Produces a bright yellow light and is unaffected by gravity. Makes your hand feel fuzzy when held."},{id:"item_goldcoin",name:"Golden Coin",cat:"Loot",sub:"",desc:"A relic of a bygone era."},{id:"item_goop",name:"Goop",cat:"Construction",sub:"Materials",desc:"Do not swallow. It takes 7 years to digest."},{id:"item_goopfish",name:"Goopfish",cat:"Loot",sub:"",desc:""},{id:"item_great_sword",name:"Great Sword",cat:"Weapons",sub:"Melee",desc:"Each strike fuels its crimson fury."},{id:"item_grenade",name:"Impact Grenade",cat:"Weapons",sub:"Explosives",desc:"A grenade that explodes on contact with any surface"},{id:"item_grenade_gold",name:"Golden Grenade",cat:"Weapons",sub:"Explosives",desc:"A grenade that is gold!"},{id:"item_grenade_launcher",name:"Grenade Launcher",cat:"Weapons",sub:"Projectile",desc:"Loads up to 3 grenades of different types."},{id:"item_guided_boomerang",name:"Guided Boomerang",cat:"Weapons",sub:"Projectile",desc:"Up to 3 targets!"},{id:"item_hammer_candy_cane",name:"Candy Cane Hammer",cat:"Weapons",sub:"Melee",desc:"A candy themed hammer"},{id:"item_harddrive",name:"Encrypted Data",cat:"Loot",sub:"",desc:"Highly sensitive data. Worth a lot to the right buyer."},{id:"item_hatchet",name:"Hatchet",cat:"Weapons",sub:"Melee",desc:"A simple tool, effective at chopping wood and bones."},{id:"item_hawaiian_drum",name:"Hawaiian Drums",cat:"Toys",sub:"Instruments",desc:"Form a drum circle and improve your wellbeing with some rhythm. Heals nearby players when played."},{id:"item_heart_chunk",name:"Heart Chunk",cat:"Loot",sub:"",desc:"Turn this in for Nuts."},{id:"item_heart_gun",name:"Heart Gun",cat:"Weapons",sub:"Projectile",desc:"Experimental Technology. Can suck entities in or repel them."},{id:"item_heartchocolatebox",name:"Heart Chocolate Box",cat:"Loot",sub:"",desc:"Happy Valentine's Day! Gift this to someone sweet or eat it yourself!"},{id:"item_hookshot",name:"Hookshot",cat:"Bags & Gadgets",sub:"Movement",desc:"A fancy, over-engineered grappling hook device."},{id:"item_hookshot_sword",name:"Yeetblade",cat:"Bags & Gadgets",sub:"Movement",desc:"Fifty percent hook, fifty percent blade, hundred percent awesome."},{id:"item_hot_cocoa",name:"Hot Chocolate",cat:"Consumables",sub:"Food",desc:"Chocolate that is hot."},{id:"item_hoverpad",name:"Hoverpad",cat:"Bags & Gadgets",sub:"Movement",desc:"Activate to propel against the ground."},{id:"item_impulse_grenade",name:"Impulse Grenade",cat:"Weapons",sub:"Explosives",desc:"Throw it and watch everyone around you get yeeted."},{id:"item_jetpack",name:"Jetpack",cat:"Bags & Gadgets",sub:"Movement",desc:"Activate and hold on to fly into the sky."},{id:"item_joystick",name:"Joystick",cat:"Construction",sub:"Gadgets",desc:"Take control. Feel the joy."},{id:"item_joystick_inv_y",name:"Joystick (Inversed Y)",cat:"Construction",sub:"Gadgets",desc:"Take control. Feel the joy. Now inverted!"},{id:"item_katana_big",name:"Big Katana",cat:"Weapons",sub:"Melee",desc:"A massive blade that cuts through enemies like the tide through sand"},{id:"item_katana_medium",name:"Medium Katana",cat:"Weapons",sub:"Melee",desc:"A massive blade that cuts through enemies like the tide through sand"},{id:"item_keycard",name:"Keycard",cat:"Loot",sub:"",desc:"An employee keycard. It can be used to activate Canopy equipment.  "},{id:"item_lance",name:"Lance",cat:"Weapons",sub:"Melee",desc:"A huge lance letting you attack from a distance."},{id:"item_landmine_bee",name:"Bee Mine",cat:"Weapons",sub:"Explosives",desc:"Love Hurts. So does this."},{id:"item_lantern_cny",name:"Lantern",cat:"Bags & Gadgets",sub:"Lights",desc:"Every lantern lit is a wish given wings."},{id:"item_lava_fishing_rod",name:"Lava Fishing Rod",cat:"Fishing",sub:"FishingRod",desc:"A normal rod that fell into a volcano - great for magma fishing and heat-loving locals, but don't expect it to chill your drink."},{id:"item_love_grenade",name:"Love Bomb",cat:"Weapons",sub:"Explosives",desc:"Love is a battlefield, and you're winning."},{id:"item_mage_pirate_sword",name:"Pirate Lord Sword",cat:"Weapons",sub:"Melee",desc:"Every strike is a perfect incision."},{id:"item_megaphone",name:"Megaphone",cat:"Toys",sub:"Misc",desc:"Use when you need some volume."},{id:"item_metal_ball",name:"Metal Ball",cat:"Construction",sub:"Materials",desc:"It's a sphere. It's metal. That's it."},{id:"item_metal_ball_easter",name:"Rainbow Ball",cat:"Construction",sub:"Materials",desc:"It's a colorful sphere."},{id:"item_metal_ball_xmas",name:"Peppermint Ball",cat:"Construction",sub:"Materials",desc:"It's a sphere. Jingle jingle."},{id:"item_metal_plate",name:"Metal Plate",cat:"Construction",sub:"Materials",desc:"Marvel at its flatness."},{id:"item_metal_plate_small",name:"Small Metal Plate",cat:"Construction",sub:"Materials",desc:"Flat, square, and sturdy. A perfect canvas for creativity."},{id:"item_metal_plate_xmas",name:"Festive Plate",cat:"Construction",sub:"Materials",desc:"Coated in icing!"},{id:"item_metal_rod",name:"Metal Rod",cat:"Construction",sub:"Materials",desc:"A rod. It's metal. Do with it what you will."},{id:"item_metal_rod_curved",name:"Curved Metal Rod",cat:"Construction",sub:"Materials",desc:"A rod. It's metal. Now in curved flavor."},{id:"item_metal_rod_easter",name:"Rainbow Rod",cat:"Construction",sub:"Materials",desc:"A colorful, metal rod. It's feeling pretty today."},{id:"item_metal_rod_small",name:"Small Metal Rod",cat:"Construction",sub:"Materials",desc:"A rod. It's metal. It's tiny."},{id:"item_metal_rod_xmas",name:"Candy Cane Rod",cat:"Construction",sub:"Materials",desc:"Looks tasty, but you shouldn't lick it."},{id:"item_metal_triangle",name:"Metal Triangle",cat:"Construction",sub:"Materials",desc:"Definitely a triangle."},{id:"item_mining_laser",name:"Mining Laser",cat:"Loot",sub:"",desc:"Laser go Brrrrrrr"},{id:"item_momboss_box",name:"Mom Box",cat:"Loot",sub:"",desc:"A box of memories with Mom. What's inside?"},{id:"item_moneygun",name:"Money Gun",cat:"Toys",sub:"Misc",desc:"Make it rain"},{id:"item_moonrock",name:"Moon Rock",cat:"Loot",sub:"",desc:""},{id:"item_moonrock_cheesy",name:"Cheesy Moon Rock",cat:"Loot",sub:"",desc:""},{id:"item_mug",name:"Mug",cat:"Loot",sub:"",desc:"A simple mug."},{id:"item_needle",name:"Large Needle",cat:"Weapons",sub:"Melee",desc:"Very pointy. Good for stabbing bugs."},{id:"item_nut",name:"Nut",cat:"Loot",sub:"",desc:"Currency...the economy is nuts."},{id:"item_nut_drop",name:"Nut Drop",cat:"Loot",sub:"",desc:"Currency...the economy is nuts."},{id:"item_ogre_hands",name:"Ogre Hands",cat:"Weapons",sub:"Melee",desc:"Green and mean, perfect for SMASHING enemies."},{id:"item_orange",name:"Orange",cat:"Loot",sub:"",desc:"Orange."},{id:"item_ore_copper_l",name:"Large Copper Chunk",cat:"Loot",sub:"",desc:"A conductive metal. Turn this in for Nuts."},{id:"item_ore_copper_m",name:"Copper Chunk",cat:"Loot",sub:"",desc:"A conductive metal. Turn this in for Nuts."},{id:"item_ore_copper_s",name:"Small Copper Chunk",cat:"Loot",sub:"",desc:"A conductive metal. Turn this in for Nuts."},{id:"item_ore_gold_l",name:"Large Gold Chunk",cat:"Loot",sub:"",desc:"Valuable metal. Turn this in for Nuts."},{id:"item_ore_gold_m",name:"Gold Chunk",cat:"Loot",sub:"",desc:"Valuable metal. Turn this in for Nuts."},{id:"item_ore_gold_s",name:"Small Gold Chunk",cat:"Loot",sub:"",desc:"Valuable metal. Turn this in for Nuts."},{id:"item_ore_hell",name:"Cinder",cat:"Loot",sub:"",desc:"It's warm to the touch."},{id:"item_ore_silver_l",name:"Large Silver Chunk",cat:"Loot",sub:"",desc:"Shiny. Turn this in for Nuts."},{id:"item_ore_silver_m",name:"Small Silver Chunk",cat:"Loot",sub:"",desc:"Shiny. Turn this in for Nuts."},{id:"item_ore_silver_s",name:"Silver Chunk",cat:"Loot",sub:"",desc:"Shiny. Turn this in for Nuts."},{id:"item_painting_canvas",name:"Painting Canvas",cat:"Loot",sub:"",desc:"A priceless worth of art...turn it in for some Nuts."},{id:"item_paperpack",name:"Paper",cat:"Loot",sub:"",desc:"The finest paper straight from Pennsylvania"},{id:"item_pelican_case",name:"Black Crate",cat:"Loot",sub:"",desc:"Turn this in for Nuts."},{id:"item_pennant_spring",name:"Spring Pennants",cat:"Construction",sub:"Materials",desc:"Add color and whimsy to your build!"},{id:"item_pickaxe",name:"Pickaxe",cat:"Weapons",sub:"Melee",desc:"The only weapon that's equally good at both mining and maiming."},{id:"item_pickaxe_cny",name:"Gilded Pickaxe",cat:"Weapons",sub:"Melee",desc:"The only weapon that's equally good at both mining and maiming, but this one is gold plated. Gold is always better, no?"},{id:"item_pickaxe_cube",name:"Cube Pickaxe",cat:"Weapons",sub:"Melee",desc:"The only weapon that's equally good at both mining and maiming."},{id:"item_pickaxe_realistic",name:"R3@L P!ck@x=",cat:"Weapons",sub:"Melee",desc:"Every fiber of your being screams that it can't exist here. And yet, here it is."},{id:"item_pickaxe_spacedwarf",name:"Dwarven Pickaxe",cat:"Weapons",sub:"Melee",desc:"If it ain't cracked, you ain't swung hard enough"},{id:"item_pinata_bat",name:"Pinata Bat",cat:"Weapons",sub:"Melee",desc:"A festive bat, perfect for smashing monsters like candy-filled piñatas."},{id:"item_pineapple",name:"Pineapple",cat:"Consumables",sub:"Food",desc:"Taste the Adventure"},{id:"item_pipe",name:"Pipe",cat:"Loot",sub:"",desc:"A versatile tool for smashing things and a plumber's best friend."},{id:"item_pistol_dragon",name:"Dragon Pistol",cat:"Weapons",sub:"Projectile",desc:"Pew Pew."},{id:"item_plank",name:"Plank",cat:"Construction",sub:"Materials",desc:"Straight. Flat. Wood. Revolutionary."},{id:"item_plank_easter",name:"Polka Dot Plank",cat:"Construction",sub:"Materials",desc:"Straight. Flat. Wood. Covered in dots."},{id:"item_plate_round",name:"Round Plate",cat:"Construction",sub:"Materials",desc:"A half sphere for building."},{id:"item_plunger",name:"Plunger",cat:"Bags & Gadgets",sub:"Movement",desc:"Push against a wall to activate suction. Can be used to climb almost any surface."},{id:"item_pogostick",name:"Pogostick",cat:"Toys",sub:"Misc",desc:"Boing boing boing."},{id:"item_police_baton",name:"Police Baton (Crowbar)",cat:"Weapons",sub:"Melee",desc:"A crowbar variant. A versatile tool for smashing things and catching bad animals."},{id:"item_portable_safe_zone",name:"Portable Safe Zone",cat:"Bags & Gadgets",sub:"Tech",desc:"Provides 5 minutes of safety outside of home. WARNING: The battery is afraid of monsters."},{id:"item_portable_teleporter",name:"Portable Teleporter",cat:"Bags & Gadgets",sub:"Movement",desc:"Activate it to teleport back to the lobby"},{id:"item_prop_scanner",name:"Prop Scanner",cat:"Bags & Gadgets",sub:"Tech",desc:"Scan something, become something."},{id:"item_pumpkin_bomb",name:"Pumpkin Bomb",cat:"Weapons",sub:"Explosives",desc:"This mischievous pumpkin loves to run. Then explode."},{id:"item_pumpkin_pie",name:"Pumpkin Pie",cat:"Loot",sub:"",desc:"A not-so-fresh pie that expired last Thanksgiving."},{id:"item_quest_gy_skull",name:"Skull",cat:"Loot",sub:"",desc:"Cranium."},{id:"item_quest_gy_skull_special",name:"Jeweled Skull",cat:"Loot",sub:"",desc:"Used to summon a terrible monster."},{id:"item_quest_key_graveyard",name:"Graveyard Key",cat:"Loot",sub:"",desc:"Unlocks something in the graveyard."},{id:"item_quiver",name:"Quiver",cat:"Bags & Gadgets",sub:"Bags",desc:"Carry many arrows. Can be equipped onto your hip or back."},{id:"item_quiver_heart",name:"Heart Quiver",cat:"Bags & Gadgets",sub:"Bags",desc:"Love makes the heart quiver, now your arrows can too!"},{id:"item_radiation_gun",name:"Radiation Gun",cat:"Bags & Gadgets",sub:"Movement",desc:"Fires a radioactive bolt. Get hit and watch your body.. change."},{id:"item_radioactive_broccoli",name:"Mega Broccoli",cat:"Consumables",sub:"Sus",desc:"A dangerous-looking vegetable. Probably shouldn't eat it, but..."},{id:"item_radioactive_fishing_rod",name:"Radioactive Fishing Rod",cat:"Fishing",sub:"FishingRod",desc:"A glowing rod that hums softly and attracts eerie green fish - great for fishing, terrible for health insurance, so wash your hands and don't kiss the catch."},{id:"item_randombox_mobloot_weapons",name:"Mob Weapons Loot Box",cat:"Loot",sub:"",desc:"A weapon box."},{id:"item_randombox_mobloot_weapons_big",name:"Obsidian Weapons Loot Box",cat:"Loot",sub:"",desc:"A large weapon box containing highly illegal contraband."},{id:"item_randombox_mobloot_zombie",name:"Zombie Loot Box",cat:"Loot",sub:"",desc:"Open it for a big surprise!"},{id:"item_rare_card",name:"Rare Trading Card",cat:"Loot",sub:"",desc:"An extremely valuable trading card."},{id:"item_remote_controller",name:"Remote Controller",cat:"Construction",sub:"Gadgets",desc:"Control freaks rejoice!"},{id:"item_revolver",name:"Revolver",cat:"Weapons",sub:"Projectile",desc:"6 shots, make them count."},{id:"item_revolver_ammo",name:"Revolver Ammo",cat:"Weapons",sub:"Ammo",desc:"Use to reload a revolver"},{id:"item_revolver_gold",name:"Gold Revolver",cat:"Weapons",sub:"Projectile",desc:"6 shots, make them count."},{id:"item_ring_buoy",name:"Ring Buoy",cat:"Bags & Gadgets",sub:"Movement",desc:"Bobber."},{id:"item_robo_monke",name:"RoboMonke2000",cat:"Bags & Gadgets",sub:"Tech",desc:"A little monkey robot toy"},{id:"item_robot_arm_left",name:"Left Robot Arm",cat:"Construction",sub:"Gadgets",desc:"For lifting, smashing, and posing to aura farm. Left version."},{id:"item_robot_arm_right",name:"Right Robot Arm",cat:"Construction",sub:"Gadgets",desc:"For lifting, smashing, and posing to aura farm. Right version."},{id:"item_robot_head",name:"Robot Head",cat:"Construction",sub:"Gadgets",desc:"Beep. Boop."},{id:"item_rope",name:"Rope",cat:"Weapons",sub:"Ammo",desc:"Use it as ammo for the zipline gun."},{id:"item_rpg",name:"RPG",cat:"Weapons",sub:"Projectile",desc:"A single use tool of ultimate destruction."},{id:"item_rpg_ammo",name:"RPG Rocket",cat:"Weapons",sub:"Ammo",desc:"Use to reload an RPG after firing"},{id:"item_rpg_ammo_egg",name:"Egg RPG Ammo",cat:"Weapons",sub:"Ammo",desc:"An explosive egg with more explosions inside. Used to reload an RPG"},{id:"item_rpg_ammo_spear",name:"Boomspear Ammo",cat:"Weapons",sub:"Ammo",desc:"Reload and explode! Ammo for the Boomspear!"},{id:"item_rpg_cny",name:"Rocket Dragon RPG",cat:"Weapons",sub:"Projectile",desc:"For ultimate destruction with style"},{id:"item_rpg_easter",name:"Egg Launcher RPG",cat:"Weapons",sub:"Projectile",desc:"For ultimate destruction with style"},{id:"item_rpg_smshr",name:"SMSHR RPG",cat:"Weapons",sub:"Projectile",desc:"SMSH through foes on any planet with an extra rocket slot!"},{id:"item_rpg_spear",name:"Boomspear",cat:"Weapons",sub:"Projectile",desc:"Explode responsibly."},{id:"item_rubberducky",name:"Rubber Ducky",cat:"Loot",sub:"",desc:"He makes bath time so much fun!"},{id:"item_ruby",name:"Ruby",cat:"Loot",sub:"",desc:"It's not Nuts, but you can turn it in for some."},{id:"item_saddle",name:"Saddle",cat:"Bags & Gadgets",sub:"Movement",desc:"Mount your friends, joust monsters, or give that one guy who can't use his arms a lift."},{id:"item_salmoncannon",name:"Salmon Cannon",cat:"Weapons",sub:"Projectile",desc:"There be something fishy about this RPG..."},{id:"item_sawblade",name:"Sawblade",cat:"Weapons",sub:"Ammo",desc:"Like a fidget spinner, though it didn't quite pass the Toy Safety minimum requirements."},{id:"item_sawblade_launcher",name:"Sawblade Launcher",cat:"Weapons",sub:"Projectile",desc:"If you really need help cutting down trees... You're just cutting trees with this, right?"},{id:"item_scissors",name:"Scissors",cat:"Loot",sub:"",desc:"Perfect for arts and crafts."},{id:"item_server_pad",name:"Broken Tablet",cat:"Loot",sub:"",desc:"A broken tablet."},{id:"item_shadowboss_key",name:"Key of the Fallen One",cat:"Loot",sub:"",desc:"Lets you bypass the being inhabiting the ancient halls beneath, granting access to horrors entombed even further below..."},{id:"item_shield",name:"Shield",cat:"Weapons",sub:"Melee",desc:"It protecc."},{id:"item_shield_bones",name:"Protective Bone Shield",cat:"Weapons",sub:"Melee",desc:"A shield made from your enemies bones."},{id:"item_shield_candy_cane",name:"Candy Cane Shield",cat:"Weapons",sub:"Melee",desc:"A shield fit for a warrior"},{id:"item_shield_police",name:"Police Shield",cat:"Weapons",sub:"Melee",desc:"A shield for protecting you and your squad"},{id:"item_shotgun",name:"Shotgun",cat:"Weapons",sub:"Projectile",desc:"Shoot a spread of pellets dealing massive damage. "},{id:"item_shotgun_ammo",name:"Shotgun Ammo",cat:"Weapons",sub:"Ammo",desc:"Use to reload a shotgun"},{id:"item_shotgun_viper",name:"Viper Shotgun",cat:"Weapons",sub:"Projectile",desc:"Spits bullets, not venom."},{id:"item_shovel",name:"Shovel",cat:"Weapons",sub:"Melee",desc:"It's a shovel."},{id:"item_shredder",name:"Nut Shredder",cat:"Bags & Gadgets",sub:"Bags",desc:"Shred your loot into nuts."},{id:"item_shrinking_broccoli",name:"Micro Broccoli",cat:"Consumables",sub:"Sus",desc:"A dangerous-looking vegetable. Probably shouldn't eat it, but..."},{id:"item_skipole",name:"Ski Pole",cat:"Toys",sub:"Misc",desc:"Climb that mountain... or don't."},{id:"item_skishoe",name:"Ski Shoe (Blue)",cat:"Bags & Gadgets",sub:"Movement",desc:"A small ski for skiing."},{id:"item_skishoe_2",name:"Ski Shoe (Green)",cat:"Bags & Gadgets",sub:"Movement",desc:"A small ski for skiing."},{id:"item_skishoe_3",name:"Ski Shoe (Red)",cat:"Bags & Gadgets",sub:"Movement",desc:"A small ski for skiing."},{id:"item_skishoe_4",name:"Ski Shoe (Yellow)",cat:"Bags & Gadgets",sub:"Movement",desc:"A small ski for skiing."},{id:"item_snowball",name:"Snowball",cat:"Weapons",sub:"Projectile",desc:"A perfectly shaped snowball ready to be thrown."},{id:"item_snowboard",name:"AC Snowboard",cat:"Bags & Gadgets",sub:"Movement",desc:"It's a snowboard!"},{id:"item_snowboard_2",name:"67 Snowboard",cat:"Bags & Gadgets",sub:"Movement",desc:"It's a snowboard!"},{id:"item_snowboard_3",name:"Flaming Eye Snowboard",cat:"Bags & Gadgets",sub:"Movement",desc:"It's a snowboard!"},{id:"item_snowboard_4",name:"Snow Snowboard",cat:"Bags & Gadgets",sub:"Movement",desc:"It's a snowboard!"},{id:"item_snowboard_auto",name:"Special Snowboard",cat:"Bags & Gadgets",sub:"Movement",desc:"A special board for special players"},{id:"item_spear_candy_cane",name:"Candy Cane Spear",cat:"Weapons",sub:"Melee",desc:"A candy themed spear"},{id:"item_special_fishing_rod",name:"Special Fishing Rod",cat:"Fishing",sub:"FishingRod",desc:"The VIP of fishing gear - painfully expensive, points you to rare fish, and feels incomplete, like it's waiting for one last upgrade."},{id:"item_special_fishing_rod_radar_part",name:"Fishing Rod Radar Part",cat:"Loot",sub:"",desc:"A 'Special' attachment for a 'Special' rod. It's a match made in... the deep dark."},{id:"item_stapler",name:"Stapler",cat:"Loot",sub:"",desc:"A gorgeous red stapler"},{id:"item_stash_grenade",name:"Stash Grenade",cat:"Weapons",sub:"Explosives",desc:"Harness the power of the stash for a few seconds"},{id:"item_steel_beam",name:"Steel Beam",cat:"Construction",sub:"Materials",desc:"Pure industrial elegance."},{id:"item_steel_beam_xmas",name:"Gingerbread Beam",cat:"Construction",sub:"Materials",desc:"Keeps your gingerbread house up to code."},{id:"item_stellarsword_blue",name:"Blue Stellar Sword",cat:"Weapons",sub:"Melee",desc:"A means to prove your dedication to the great Adventure."},{id:"item_stellarsword_gold",name:"Gold Stellar Sword",cat:"Weapons",sub:"Melee",desc:"Ultimate proof of your dedication to the great Adventure."},{id:"item_stick_armbones",name:"Arm Bones (Stick)",cat:"Weapons",sub:"Melee",desc:"In case you need to defend your bones with more bones."},{id:"item_stick_bone",name:"Bone (Stick)",cat:"Weapons",sub:"Melee",desc:"Why use a tree stick when you can use a bone?"},{id:"item_sticker_dispenser",name:"Sticker Dispenser",cat:"Bags & Gadgets",sub:"Recon",desc:"Drop glowing stickers to mark your path and never lose your way."},{id:"item_sticky_dynamite",name:"Sticky Dynamite",cat:"Weapons",sub:"Explosives",desc:"Dunno what this dynamite got into."},{id:"item_stinky_cheese",name:"Stinky Cheese",cat:"Consumables",sub:"Food",desc:"Stinky Swiss cheese. Stay as far away as possible."},{id:"item_tablet",name:"Tablet",cat:"Bags & Gadgets",sub:"Recon",desc:"It's like a treasure map, but on a tiny screen."},{id:"item_tapedispenser",name:"Tape Dispenser",cat:"Loot",sub:"",desc:"Perfect for arts and crafts."},{id:"item_tele_grenade",name:"Tele Grenade",cat:"Bags & Gadgets",sub:"Movement",desc:"Activate and throw to spatially transpose your body after a delay."},{id:"item_tele_pearl",name:"Tele Pearl",cat:"Bags & Gadgets",sub:"Movement",desc:"Activate and throw this cubical anomaly to spatially transpose your body upon impact."},{id:"item_teleport_dagger",name:"Teleport Dagger",cat:"Weapons",sub:"Melee",desc:"A throwing dagger that is hard to lose."},{id:"item_teleport_gun",name:"Teleport Gun",cat:"Bags & Gadgets",sub:"Movement",desc:"A gun that can spatially transpose your body when fired."},{id:"item_theremin",name:"Theremin",cat:"Toys",sub:"Instruments",desc:"Make some music, or weird noises."},{id:"item_timebomb",name:"Time Bomb",cat:"Loot",sub:"",desc:"A bomb that explodes after a certain amount of time."},{id:"item_toilet_paper",name:"Toilet Paper",cat:"Loot",sub:"",desc:"Soft and in high demand. Turn it in for Nuts."},{id:"item_toilet_paper_mega",name:"Mega Toilet Paper",cat:"Loot",sub:"",desc:"Extra fluffy, extra valuable. Turn it in for Nuts."},{id:"item_toilet_paper_roll_empty",name:"Empty Toilet Paper Roll",cat:"Loot",sub:"",desc:"It has its uses. Turn it in for Nuts."},{id:"item_token_circus",name:"Token",cat:"Loot",sub:"",desc:"Used to play games at the Circus"},{id:"item_trampoline",name:"Trampoline",cat:"Bags & Gadgets",sub:"Movement",desc:"Yeah, but can you do a backflip?"},{id:"item_treestick",name:"Tree Stick",cat:"Weapons",sub:"Melee",desc:"Nature's sword. Can be used as a weapon, but it seems like it will break any second..."},{id:"item_tripwire_explosive",name:"Tripwire Explosive",cat:"Weapons",sub:"Explosives",desc:"Attach to any surface to create a deadly trap."},{id:"item_trophy",name:"Trophy",cat:"Loot",sub:"",desc:"Everybody deserves one. Turn it in for Nuts."},{id:"item_truss",name:"Truss",cat:"Construction",sub:"Materials",desc:"It's always there for support when you need it."},{id:"item_truss_easter",name:"Polka Dot Truss",cat:"Construction",sub:"Materials",desc:"The bunny's truss of choice."},{id:"item_truss_small",name:"Small Truss",cat:"Construction",sub:"Materials",desc:"It's always there for tiny support when you need it."},{id:"item_truss_xmas",name:"Candy Cane Truss",cat:"Construction",sub:"Materials",desc:"Supports the most ambitious candy constructions."},{id:"item_turkey_leg",name:"Turkey Leg",cat:"Loot",sub:"",desc:"A juicy leg from a turkey."},{id:"item_turkey_whole",name:"Turkey Whole",cat:"Loot",sub:"",desc:"A whole turkey. Big appetite required!"},{id:"item_ukulele",name:"Ukulele",cat:"Toys",sub:"Instruments",desc:"Serenade your friends with a relaxing tune. Heals nearby players when played."},{id:"item_ukulele_gold",name:"Golden Ukulele",cat:"Toys",sub:"Instruments",desc:"Serenade your friends even more with gold. Heals nearby players when played."},{id:"item_umbrella",name:"Umbrella",cat:"Bags & Gadgets",sub:"Movement",desc:"Descend gracefully. Part parachute, part parasol, all fabulous."},{id:"item_umbrella_clover",name:"Clover Umbrella",cat:"Bags & Gadgets",sub:"Movement",desc:"Descend gracefully, with a touch of luck. Part parachute, part parasol, all charm."},{id:"item_umbrella_squirrel",name:"Squirrel Umbrella",cat:"Bags & Gadgets",sub:"Movement",desc:"Descend gracefully, with the spirit of the forest. Part parachute, part parasol, all nutty."},{id:"item_upsidedown_loot",name:"Upsidedown Loot",cat:"Loot",sub:"",desc:"Turn this in for Nuts."},{id:"item_uranium_chunk_l",name:"Large Uranium Chunk",cat:"Loot",sub:"",desc:"Radioactive metal. Turn this in for Nuts."},{id:"item_uranium_chunk_m",name:"Uranium Chunk",cat:"Loot",sub:"",desc:"Radioactive metal. Turn this in for Nuts."},{id:"item_uranium_chunk_s",name:"Small Uranium Chunk",cat:"Loot",sub:"",desc:"Radioactive metal. Turn this in for Nuts."},{id:"item_viking_hammer",name:"Dawn Hammer",cat:"Weapons",sub:"Melee",desc:"Launch your enemies into the sun!"},{id:"item_viking_hammer_twilight",name:"Twilight Hammer",cat:"Weapons",sub:"Melee",desc:"Launch your enemies like a shooting star!"},{id:"item_war_fan",name:"War Fan",cat:"Weapons",sub:"Melee",desc:"Fan the flames of war with style."},{id:"item_whoopie",name:"Whoopie",cat:"Toys",sub:"Misc",desc:"Pfffttt"},{id:"item_wood_log",name:"Wood Log",cat:"Loot",sub:"",desc:"Perfect for building... or burning."},{id:"item_wood_pallet",name:"Wood Pallet",cat:"Construction",sub:"Materials",desc:"A pallet. Like a plank, but with ambition."},{id:"item_wood_pallet_easter",name:"Polka Dot Pallet",cat:"Construction",sub:"Materials",desc:"The industrial delivery system for giant festive eggs."},{id:"item_wyrmpiercer",name:"Wyrmpiercer Halberd",cat:"Weapons",sub:"Melee",desc:"Scourge of the Ancient Ones."},{id:"item_zipline_gun",name:"Zipline Gun",cat:"Bags & Gadgets",sub:"Movement",desc:"Load it with rope and fire to instantly create a zipline between two points."},{id:"item_zombie_meat",name:"Zombie Meat",cat:"Loot",sub:"",desc:"Not fresh. Not valuable. Not... safe."},{id:"item_alien_cube",name:"Alien Cube",cat:"Loot",sub:"",desc:"Nothing fancy, just raw energy."},{id:"item_ampbattery",name:"Amp Battery",cat:"Bags & Gadgets",sub:"Tech",desc:"Tszz"},{id:"item_ampbattery_mega",name:"Mega Amp Battery",cat:"Bags & Gadgets",sub:"Tech",desc:"TSZZ"},{id:"item_backpack_space",name:"Astronaut Backpack",cat:"Bags & Gadgets",sub:"Bags",desc:"Perfect for an interstellar adventure."},{id:"item_batterycell_hydra",name:"Hydra Batterycell Ammo",cat:"Weapons",sub:"Ammo",desc:"Ammo for the Hydra Energy Blaster."},{id:"item_drill_galaxy",name:"BFD9000-G",cat:"Weapons",sub:"Melee",desc:"When mining asteroids, you bring the BFD-G."},{id:"item_flashlight_galaxy",name:"Galaxy Flashlight",cat:"Bags & Gadgets",sub:"Lights",desc:"Perfect for lighting up spooky spacestations and ominous comets."},{id:"item_fungi_blue",name:"Blue Shroom",cat:"Consumables",sub:"Sus",desc:"Snack sized."},{id:"item_fungi_red",name:"Red Shroom",cat:"Consumables",sub:"Sus",desc:"Huge upgrade."},{id:"item_grappling_hook",name:"Chain Grab",cat:"Bags & Gadgets",sub:"Movement",desc:"Catch a friend and reel them in."},{id:"item_great_sword_galaxy",name:"Galaxy Great Sword",cat:"Weapons",sub:"Melee",desc:"A weapon that's great for hitting monsters out of this world."},{id:"item_hookshot_galaxy",name:"Galaxy Hookshot",cat:"Bags & Gadgets",sub:"Movement",desc:"A fancy, over-engineered grappling hook device."},{id:"item_hoverpad_galaxy",name:"Galaxy Hoverpad",cat:"Bags & Gadgets",sub:"Movement",desc:"Powered by stardust, activate to propel across the cosmos."},{id:"item_hydra",name:"Hydra Energy Blaster",cat:"Weapons",sub:"Projectile",desc:"Point, pull trigger, vaporize."},{id:"item_mannequin_arm_left",name:"Mannequin Left Arm",cat:"Construction",sub:"Materials",desc:"The left arm of a discarded mannequin. Could come in handy."},{id:"item_mannequin_arm_right",name:"Mannequin Right Arm",cat:"Construction",sub:"Materials",desc:"The right arm of a discarded mannequin. Could come in handy."},{id:"item_mannequin_head",name:"Mannequin Head",cat:"Construction",sub:"Materials",desc:"The head of a discarded mannequin. I suddenly feel watched."},{id:"item_mannequin_leg_left",name:"Mannequin Left Leg",cat:"Construction",sub:"Materials",desc:"The left leg of a discarded mannequin. This will give you a leg up!"},{id:"item_mannequin_leg_right",name:"Mannequin Right Leg",cat:"Construction",sub:"Materials",desc:"The right leg of a discarded mannequin. This will give you a leg up!"},{id:"item_mannequin_torso",name:"Mannequin Torso",cat:"Construction",sub:"Materials",desc:"The body of a discarded mannequin. Creepy."},{id:"item_mining_laser_orange",name:"Old Mining Laser",cat:"Weapons",sub:"Projectile",desc:"Laser go Brrrrrrr"},{id:"item_moonrock_friend",name:"Pet Moon Rock",cat:"Toys",sub:"Misc",desc:"He survived a 230,000-mile fall to be your friend. He loves you to the moon and back!"},{id:"item_pickaxe_realistic_galaxy",name:"Galaxy P!ck@x=",cat:"Weapons",sub:"Melee",desc:"Every fiber of your being screams that it can't exist in this dimension. And yet, here it is."},{id:"item_robot_arm_left_galaxy",name:"Galaxy Left Robot Arm",cat:"Construction",sub:"Gadgets",desc:"For lifting, smashing, and posing to aurora farm. Left version."},{id:"item_robot_arm_right_galaxy",name:"Galaxy Right Robot Arm",cat:"Construction",sub:"Gadgets",desc:"For lifting, smashing, and posing to aurora farm. Right version."},{id:"item_shield_galaxy",name:"Galaxy Shield",cat:"Weapons",sub:"Melee",desc:"It protecc. In spaaaace!"},{id:"item_shotgun_gold",name:"Gold Shotgun",cat:"Weapons",sub:"Projectile",desc:"Shoot a spread of gold coins dealing massive damage in style. "},{id:"item_shotgun_sawed",name:"Sawed Off",cat:"Weapons",sub:"Projectile",desc:"Massive spread of pellets, massive damage, compact size!"},{id:"item_snowboard_galaxy",name:"Galaxy Snowboard",cat:"Bags & Gadgets",sub:"Movement",desc:"Shred the cosmos!"},{id:"item_stopwatch",name:"Stopwatch",cat:"Toys",sub:"Misc",desc:"Now everything can be a race against the clock."},{id:"item_teleport_gun_galaxy",name:"Galaxy Teleport Gun",cat:"Bags & Gadgets",sub:"Movement",desc:"A gun that can spatially transpose your body when fired."},{id:"item_wireframe_cube",name:"Wireframe Cube",cat:"Weapons",sub:"Ammo",desc:"Ammo for the wireframe gun."},{id:"item_wireframe_gun",name:"Wireframe Gun",cat:"Weapons",sub:"Projectile",desc:"Strips the world down to its bare geometry."}];
+
+const BAG_CAPS={item_backpack_small_base:5,item_backpack:10,item_backpack_large_base:20,item_backpack_large_basketball:20,item_backpack_large_clover:20,item_backpack_fish:20,item_backpack_monkey:20,item_quiver:10,item_quiver_heart:10,item_shredder:10};
+const CC={'Bags & Gadgets':'#818cf8',Construction:'#c084fc',Consumables:'#34d399',Fishing:'#38bdf8',Loot:'#fb923c',Toys:'#f472b6',Weapons:'#f87171'};
+const CATS=['All',...Object.keys(CC)];
+const IM=Object.fromEntries(ITEMS.map(i=>[i.id,i]));
+const OPTS=ITEMS.map(i=>`<option value="${i.id}">${i.name}</option>`).join('');
+const STASH_POS=[100,101,102,103,104,105,106,107,108,200,201,202,203,204,205,206,207,208,300,301,302,303,304,305,306,307,308,400,401,402,403,404,405,406,407,408,500,501,502,503,504,505,506,507,508,600,601,602,603,604,605,606,607,608,700,701,702,703,704,705,706,707,708,800,801,802,803,804,805,806,807,808];
+
+function gc(id){return CC[IM[id]?.cat]||'#888';}
+function gn(id){return id?IM[id]?.name||id:'— pick an item —';}
+function hs(h,s){return `hsl(${h},${Math.max(0,50+(s||0)*0.39)}%,55%)`;}
+function selOpts(val){if(!val)return`<option value="" disabled selected>— select item —</option>`+OPTS;return`<option value="" disabled>— select item —</option>`+OPTS.replace(`value="${val}"`,`value="${val}" selected`);}
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function shl(json){return json.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g,m=>{let c='j-num';if(/^"/.test(m))c=/:$/.test(m)?'j-key':'j-str';else if(/true|false/.test(m))c='j-bool';else if(/null/.test(m))c='j-null';return`<span class="${c}">${m}</span>`;});}
+
+let mode='stash';
+function setMode(m){
+  mode=m;
+  ['Stash','Loadout','Blueprint','Lobp','Ltmpl'].forEach(n=>document.getElementById('mode'+n).classList.toggle('on',m===n.toLowerCase()));
+  document.getElementById('stashView').classList.toggle('hidden',m!=='stash');
+  document.getElementById('loadoutView').classList.toggle('hidden',m!=='loadout');
+  document.getElementById('blueprintView').classList.toggle('hidden',m!=='blueprint');
+  document.getElementById('lobpView').classList.toggle('hidden',m!=='lobp');
+  document.getElementById('ltmplView').classList.toggle('hidden',m!=='ltmpl');
+  document.getElementById('btnRandomize').style.display=m==='stash'||m==='loadout'?'':'none';
+  if(m==='loadout'){loActiveSlot=null;renderLoadout();}
+  if(m==='blueprint')renderBlueprint();
+  if(m==='lobp'){lobpActiveSlot=null;renderLobp();}
+  if(m==='ltmpl'){ltActiveSlot=null;renderLtmpl();}
+  renderJSON();renderList();
+}
+function openImport(){
+  const ids={stash:'importModal',loadout:'loImportModal',blueprint:'bpImportModal',lobp:'lobpImportModal',ltmpl:'ltImportModal'};
+  const ta={stash:'importTA',loadout:'loImportTA',blueprint:'bpImportTA',lobp:'lobpImportTA',ltmpl:'ltImportTA'};
+  const er={stash:'importError',loadout:'loImportError',blueprint:'bpImportError',lobp:'lobpImportError',ltmpl:'ltImportError'};
+  document.getElementById(ta[mode]).value='';
+  document.getElementById(er[mode]).textContent='';
+  openModal(ids[mode]);
+}
+function clearAll(){
+  if(mode==='loadout'){LO_SLOTS.forEach(s=>loadout[s.key]=null);loActiveSlot=null;renderLoadout();renderJSON();}
+  else if(mode==='blueprint'){bpChildren=[];bpRootItem='';renderBlueprint();renderJSON();}
+  else if(mode==='lobp'){LO_SLOTS.forEach(s=>lobp[s.key]=null);lobpActiveSlot=null;renderLobp();renderJSON();}
+  else if(mode==='ltmpl'){LT_SLOTS.forEach(s=>ltmpl[s.key]=null);ltActiveSlot=null;renderLtmpl();renderJSON();}
+  else{items=[];expTL.clear();expCH.clear();renderAll();}
+}
+function copyJSON(){navigator.clipboard.writeText(JSON.stringify(buildOut(),null,2)).then(()=>showToast('Copied!'));}
+function downloadJSON(){
+  const fnames={stash:'stash.json',loadout:'loadout.json',blueprint:'blueprint.json',lobp:'loadout_blueprint.json',ltmpl:'loadout_template.json'};
+  const b=new Blob([JSON.stringify(buildOut(),null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=fnames[mode];a.click();showToast('Downloaded!');
+}
+function buildOut(){
+  if(mode==='loadout')return buildLoadoutOut();
+  if(mode==='blueprint')return buildBpOut();
+  if(mode==='lobp')return buildLobpOut();
+  if(mode==='ltmpl')return buildLtOut();
+  return buildStashOut();
+}
+function renderJSON(){
+  const d=buildOut(),s=JSON.stringify(d,null,2);
+  document.getElementById('jprev').innerHTML=shl(s);
+  let stat='';
+  if(mode==='stash'){const inner=buildStashInner();const tc=inner.items.reduce((a,it)=>a+(it.children?.length||0),0);stat=`<div class="stat"><div class="slbl">Items</div><div class="sval">${inner.items.length}</div></div><div class="stat"><div class="slbl">Children</div><div class="sval">${tc}</div></div>`;}
+  else if(mode==='loadout'){const n=LO_SLOTS.filter(sl=>loadout[sl.key]?.itemID).length;stat=`<div class="stat"><div class="slbl">Slots</div><div class="sval">${n}/6</div></div>`;}
+  else if(mode==='blueprint'){const cnt=bpChildren.reduce((a,c)=>a+(c.stuckChildren?.length||0)+1,0);stat=`<div class="stat"><div class="slbl">Nodes</div><div class="sval">${cnt}</div></div>`;}
+  else if(mode==='lobp'){const n=LO_SLOTS.filter(sl=>lobp[sl.key]?.itemID).length;stat=`<div class="stat"><div class="slbl">Slots</div><div class="sval">${n}/6</div></div>`;}
+  else if(mode==='ltmpl'){const n=LT_SLOTS.filter(sl=>ltmpl[sl.key]?.itemID).length;stat=`<div class="stat"><div class="slbl">Slots</div><div class="sval">${n}</div></div>`;}
+  stat+=`<div class="stat"><div class="slbl">Size</div><div class="sval" style="font-size:12px">${(s.length/1024).toFixed(1)}kb</div></div>`;
+  document.getElementById('sbar').innerHTML=stat;
+}
+
+// ── LIBRARY ──
+let filt='All';
+function init(){
+  document.getElementById('catFilters').innerHTML=CATS.map(c=>`<button class="cb ${c==='All'?'active':''}" data-c="${c}" onclick="setFilt('${c}')">${c}</button>`).join('');
+  renderList();renderAll();renderJSON();
+}
+function setFilt(c){filt=c;document.querySelectorAll('.cb').forEach(b=>b.classList.toggle('active',b.dataset.c===c));renderList();}
+function renderList(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const f=ITEMS.filter(i=>(filt==='All'||i.cat===filt)&&(!q||i.name.toLowerCase().includes(q)||i.id.includes(q)));
+  const hilite=(mode==='loadout'&&loActiveSlot)||(mode==='blueprint'&&bpActiveNode!==null)||(mode==='ltmpl'&&ltActiveSlot);
+  document.getElementById('itemList').innerHTML=f.map(i=>`<div class="icard${hilite?' lo-target':''}" onclick="onLibClick('${i.id}')" onmouseenter="showTip(event,'${i.id}')" onmouseleave="hideTip()"><div class="idot" style="background:${CC[i.cat]||'#888'}"></div><div class="iinfo"><div class="iname">${i.name}</div><div class="iid">${i.id}</div></div><button class="iadd" onclick="event.stopPropagation();onLibClick('${i.id}')">+</button></div>`).join('')||`<div style="padding:16px;text-align:center;color:var(--muted);font-size:11px;font-family:'Share Tech Mono',monospace">No results</div>`;
+}
+function onLibClick(id){
+  if(mode==='loadout'&&loActiveSlot!==null){loAssign(loActiveSlot,id);return;}
+  if(mode==='blueprint'&&bpActiveNode!==null){bpAssign(bpActiveNode,id);return;}
+  if(mode==='lobp'&&lobpActiveSlot!==null){lobpAssign(lobpActiveSlot,id);return;}
+  if(mode==='ltmpl'&&ltActiveSlot!==null){ltAssign(ltActiveSlot,id);return;}
+  if(mode==='stash'){
+    const empty=items.findIndex(it=>!it.itemID);
+    if(empty!==-1){items[empty].itemID=id;renderAll();showToast('Set to '+gn(id));return;}
+    items.push(nitem(id,false));renderAll();showToast('Added '+gn(id));
+  }
+}
+
+// ── STASH ──
+let items=[],expTL=new Set(),expCH=new Set();
+function nextStashPos(){return STASH_POS[Math.min(items.length,STASH_POS.length-1)];}
+function nitem(id,isCont){return{itemID:id||null,scaleModifier:0,colorHue:0,colorSaturation:0,ammo:0,state:0,stashPos:nextStashPos(),children:isCont?[]:undefined};}
+function nchild(){return{itemID:null,scaleModifier:0,colorHue:0,colorSaturation:0,ammo:0,state:0,children:undefined};}
+function addTL(isCont){items.push(nitem(null,isCont));expTL.add(items.length-1);renderAll();}
+function removeTL(ti){items.splice(ti,1);const ne=new Set(),nc=new Set();expTL.forEach(i=>{if(i<ti)ne.add(i);else if(i>ti)ne.add(i-1);});expCH.forEach(k=>{const[a,b]=k.split('-').map(Number);if(a<ti)nc.add(k);else if(a>ti)nc.add(`${a-1}-${b}`);});expTL=ne;expCH=nc;renderAll();}
+function togTL(ti){expTL.has(ti)?expTL.delete(ti):expTL.add(ti);renderAll();}
+function togCH(ti,ci){const k=`${ti}-${ci}`;expCH.has(k)?expCH.delete(k):expCH.add(k);renderAll();}
+function updTL(ti,f,v){items[ti][f]=isNaN(v)?v:+v;renderJSON();}
+function togCont(ti){if(Array.isArray(items[ti].children))delete items[ti].children;else items[ti].children=[];renderAll();}
+function addChild(ti){if(!Array.isArray(items[ti].children))items[ti].children=[];items[ti].children.push(nchild());expTL.add(ti);expCH.add(`${ti}-${items[ti].children.length-1}`);renderAll();}
+function remChild(ti,ci){items[ti].children.splice(ci,1);renderAll();}
+function updChild(ti,ci,f,v){items[ti].children[ci][f]=isNaN(v)?v:+v;renderJSON();}
+function togChCont(ti,ci){const ch=items[ti].children[ci];if(Array.isArray(ch.children))delete ch.children;else ch.children=[];renderAll();}
+function addNested(ti,ci){if(!Array.isArray(items[ti].children[ci].children))items[ti].children[ci].children=[];items[ti].children[ci].children.push(nchild());renderAll();}
+function remNested(ti,ci,ni){items[ti].children[ci].children.splice(ni,1);renderAll();}
+function updNested(ti,ci,ni,f,v){items[ti].children[ci].children[ni][f]=isNaN(v)?v:+v;renderJSON();}
+function renderAll(){renderEditor();renderJSON();}
+function renderEditor(){
+  const el=document.getElementById('earea');
+  if(!items.length){el.innerHTML=`<div class="empty"><div class="et">No items yet</div><div class="et" style="opacity:.5">Click "+ Item" or pick from library</div></div>`;return;}
+  el.innerHTML=items.map((it,ti)=>renderTL(it,ti)).join('');
+}
+function renderTL(it,ti){
+  const isCont=Array.isArray(it.children),col=gc(it.itemID),exp=expTL.has(ti);
+  const cap=BAG_CAPS[it.itemID];
+  const overCap=isCont&&cap!==undefined&&it.children.length>cap;
+  const warnBadge=overCap?`<span class="warn-badge">over cap (${cap})</span>`:'';
+  const posBadge=`<span class="bdg" style="color:var(--muted)">pos:${it.stashPos??ti}</span>`;
+  const posRow=`<div class="srow"><label>stashPos</label><select style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:5px;font-size:11px;font-family:'Share Tech Mono',monospace;outline:none;" onchange="updTL(${ti},'stashPos',+this.value)">${STASH_POS.map(p=>`<option value="${p}"${(it.stashPos??STASH_POS[ti])===p?' selected':''}>${p}</option>`).join('')}</select></div>`;
+  return `<div class="tlitem" draggable="true" data-ti="${ti}" ondragstart="dragStart(event,${ti})" ondragover="dragOver(event,${ti})" ondrop="dragDrop(event,${ti})" ondragleave="dragLeave(event)" ondragend="dragEnd()"><div class="tlhdr" onclick="togTL(${ti})"><span class="drag-handle" onclick="event.stopPropagation()">::</span><span class="arr ${exp?'open':''}">&#9654;</span><div class="tldot" style="background:${col};border-radius:${isCont?'2px':'50%'};width:8px;height:8px;flex-shrink:0"></div><span class="tlname">${gn(it.itemID)}</span>${isCont?`<span class="bdg">${it.children.length} children</span>`:''} ${posBadge}${warnBadge}<div class="arow" onclick="event.stopPropagation()">${isCont?`<button class="ib add" onclick="addChild(${ti})">+</button>`:''}<button class="ib rnd" onclick="rndSingleItem(${ti})" title="Randomize">?</button><button class="ib dup" onclick="dupItem(${ti})" title="Duplicate">D</button><button class="ib copy" onclick="copyItem(${ti})" title="Copy item">C</button><button class="ib paste${itemClip?' has-clip':''}" onclick="pasteItem(${ti})" title="Paste item">P</button><button class="ib" onclick="togCont(${ti})" style="color:${isCont?'var(--muted)':'#60a5fa'}" title="${isCont?'Remove container':'Make container'}">[C]</button><button class="ib del" onclick="removeTL(${ti})">x</button></div></div>${exp?`<div class="tlbody"><div class="srow"><label>Item</label><select onchange="updTL(${ti},'itemID',this.value);renderAll()">${selOpts(it.itemID)}</select></div>${posRow}<div class="fgrid"><div class="field"><label>scaleModifier</label><div class="frow"><input type="range" min="-128" max="127" value="${it.scaleModifier}" oninput="updTL(${ti},'scaleModifier',+this.value);this.nextElementSibling.textContent=this.value"><span class="fval">${it.scaleModifier}</span></div><input type="number" min="-128" max="127" value="${it.scaleModifier}" onchange="updTL(${ti},'scaleModifier',+this.value)"></div><div class="field"><label>colorHue</label><div class="frow"><input type="range" min="0" max="240" value="${it.colorHue}" oninput="updTL(${ti},'colorHue',+this.value);this.nextElementSibling.style.background=hs(+this.value,${it.colorSaturation})"><div class="hsw" style="background:${hs(it.colorHue,it.colorSaturation)}"></div></div><input type="number" min="0" max="240" value="${it.colorHue}" onchange="updTL(${ti},'colorHue',+this.value)"></div><div class="field"><label>colorSaturation</label><div class="frow"><input type="range" min="-128" max="127" value="${it.colorSaturation}" oninput="updTL(${ti},'colorSaturation',+this.value);this.nextElementSibling.textContent=this.value"><span class="fval">${it.colorSaturation}</span></div><input type="number" min="-128" max="127" value="${it.colorSaturation}" onchange="updTL(${ti},'colorSaturation',+this.value)"></div><div class="field"><label>ammo</label><div class="frow"><input type="range" min="0" max="255" value="${it.ammo??0}" oninput="updTL(${ti},'ammo',+this.value);this.nextElementSibling.textContent=this.value"><span class="fval">${it.ammo??0}</span></div><input type="number" min="0" max="255" value="${it.ammo??0}" onchange="updTL(${ti},'ammo',+this.value)"></div><div class="field"><label>state</label><div class="frow"><input type="range" min="0" max="255" value="${it.state??0}" oninput="updTL(${ti},'state',+this.value);this.nextElementSibling.textContent=this.value"><span class="fval">${it.state??0}</span></div><input type="number" min="0" max="255" value="${it.state??0}" onchange="updTL(${ti},'state',+this.value)"></div></div></div>${isCont?renderChildren(it.children,ti):''}`:''}</div>`;
+}
+function renderChildren(children,ti){
+  if(!children.length)return`<div class="chwrap"><div style="padding:8px 12px;font-size:9px;color:var(--muted);font-family:'Share Tech Mono',monospace">No children — click + to add</div></div>`;
+  return`<div class="chwrap"><div class="chlist">${children.map((ch,ci)=>renderChild(ch,ti,ci)).join('')}</div></div>`;
+}
+function renderChild(ch,ti,ci){
+  const col=gc(ch.itemID),exp=expCH.has(`${ti}-${ci}`),isCont=Array.isArray(ch.children);
+  return`<div class="chrow"><div class="chhdr" onclick="togCH(${ti},${ci})"><span class="arr ${exp?'open':''}" style="font-size:8px">&#9654;</span><div class="chdot" style="background:${col}"></div><span class="chname">${gn(ch.itemID)}</span><span class="chid">${ch.itemID||''}</span>${isCont?`<span class="bdg" style="font-size:7px">${ch.children.length}</span>`:''}<div class="arow" onclick="event.stopPropagation()" style="margin-left:auto"><button class="ib copy" style="font-size:9px" onclick="copyChild(${ti},${ci})">C</button><button class="ib paste${childClip?' has-clip':''}" style="font-size:9px" onclick="pasteChild(${ti},${ci})">P</button><button class="ib" style="font-size:9px;color:${isCont?'var(--muted)':'#60a5fa'}" onclick="togChCont(${ti},${ci})">[C]</button>${isCont?`<button class="ib add" style="font-size:9px" onclick="addNested(${ti},${ci})">+</button>`:''}<button class="ib del" style="font-size:9px" onclick="remChild(${ti},${ci})">x</button></div></div>${exp?`<div class="chbody"><select onchange="updChild(${ti},${ci},'itemID',this.value);renderAll()">${selOpts(ch.itemID)}</select><div class="cfrow"><span class="cflbl">scale</span><div class="cfin"><input type="range" min="-128" max="127" value="${ch.scaleModifier}" oninput="updChild(${ti},${ci},'scaleModifier',+this.value);this.nextElementSibling.textContent=this.value"></div><span class="cfval">${ch.scaleModifier}</span></div><div class="cfrow"><span class="cflbl">hue</span><div class="cfin"><input type="range" min="0" max="240" value="${ch.colorHue}" oninput="updChild(${ti},${ci},'colorHue',+this.value);this.parentElement.nextElementSibling.style.background=hs(+this.value,${ch.colorSaturation})"></div><div class="hsw" style="background:${hs(ch.colorHue,ch.colorSaturation)}"></div></div><div class="cfrow"><span class="cflbl">sat</span><div class="cfin"><input type="range" min="-128" max="127" value="${ch.colorSaturation}" oninput="updChild(${ti},${ci},'colorSaturation',+this.value);this.nextElementSibling.textContent=this.value"></div><span class="cfval">${ch.colorSaturation}</span></div><div class="cfrow"><span class="cflbl">ammo</span><div class="cfin"><input type="range" min="0" max="255" value="${ch.ammo??0}" oninput="updChild(${ti},${ci},'ammo',+this.value);this.nextElementSibling.textContent=this.value"></div><span class="cfval">${ch.ammo??0}</span></div><div class="cfrow"><span class="cflbl">state</span><div class="cfin"><input type="range" min="0" max="255" value="${ch.state??0}" oninput="updChild(${ti},${ci},'state',+this.value);this.nextElementSibling.textContent=this.value"></div><span class="cfval">${ch.state??0}</span></div>${isCont?`<div class="nwrap"><div class="nhdr">Nested <button class="nadd" onclick="addNested(${ti},${ci})">+ add</button></div>${ch.children.map((n,ni)=>`<div class="ni"><select class="nsel" onchange="updNested(${ti},${ci},${ni},'itemID',this.value);renderAll()">${selOpts(n.itemID)}</select><span class="nlbl">scale</span><input class="nnum" type="number" min="-128" max="127" value="${n.scaleModifier}" onchange="updNested(${ti},${ci},${ni},'scaleModifier',+this.value)"><span class="nlbl">hue</span><input class="nnum" type="number" min="0" max="240" value="${n.colorHue}" onchange="updNested(${ti},${ci},${ni},'colorHue',+this.value)"><span class="nlbl">sat</span><input class="nnum" type="number" min="-128" max="127" value="${n.colorSaturation}" onchange="updNested(${ti},${ci},${ni},'colorSaturation',+this.value)"><span class="nlbl">ammo</span><input class="nnum" type="number" min="0" value="${n.ammo??0}" onchange="updNested(${ti},${ci},${ni},'ammo',+this.value)"><span class="nlbl">state</span><input class="nnum" type="number" min="0" max="255" value="${n.state??0}" onchange="updNested(${ti},${ci},${ni},'state',+this.value)"><button class="ndel" onclick="remNested(${ti},${ci},${ni})">x</button></div>`).join('')}</div>`:''}</div>`:''}</div>`;
+}
+function buildStashInner(){
+  return{version:1,items:items.filter(it=>it.itemID).map((it,i)=>{
+    const o={itemID:it.itemID,scaleModifier:it.scaleModifier,colorHue:it.colorHue,colorSaturation:it.colorSaturation,ammo:it.ammo??0,state:it.state??0};
+    if(Array.isArray(it.children)){o.children=it.children.filter(ch=>ch.itemID).map(ch=>{const c={itemID:ch.itemID,scaleModifier:ch.scaleModifier,colorHue:ch.colorHue,colorSaturation:ch.colorSaturation,ammo:ch.ammo??0,state:ch.state??0};if(Array.isArray(ch.children))c.children=ch.children.filter(n=>n.itemID).map(n=>({itemID:n.itemID,scaleModifier:n.scaleModifier,colorHue:n.colorHue,colorSaturation:n.colorSaturation,ammo:n.ammo??0,state:n.state??0}));return c;});}
+    o.stashPos=it.stashPos??i;
+    return o;
+  })};
+}
+function buildStashOut(){return{objects:[{collection:"user_inventory",key:"stash",permission_read:1,permission_write:1,value:JSON.stringify(buildStashInner())}]};}
+function doStashImport(){
+  const err=document.getElementById('importError');
+  try{
+    let d=JSON.parse(document.getElementById('importTA').value.trim());
+    if(typeof d==='string')d=JSON.parse(d);
+    if(d.objects&&d.objects[0])d=d.objects[0];
+    if(d.value)d=JSON.parse(d.value);
+    let arr=d.items||d;
+    if(!Array.isArray(arr))throw new Error('Expected items array');
+    items=arr.map(it=>({itemID:it.itemID||null,scaleModifier:it.scaleModifier||0,colorHue:it.colorHue||0,colorSaturation:it.colorSaturation||0,ammo:it.ammo||0,state:it.state||0,stashPos:it.stashPos!==undefined?it.stashPos:0,children:Array.isArray(it.children)?it.children.map(ch=>({itemID:ch.itemID||null,scaleModifier:ch.scaleModifier||0,colorHue:ch.colorHue||0,colorSaturation:ch.colorSaturation||0,ammo:ch.ammo||0,state:ch.state||0,children:Array.isArray(ch.children)?ch.children.map(n=>({itemID:n.itemID||null,scaleModifier:n.scaleModifier||0,colorHue:n.colorHue||0,colorSaturation:n.colorSaturation||0,ammo:n.ammo||0,state:n.state||0})):undefined})):undefined}));
+    expTL.clear();expCH.clear();closeModal('importModal');renderAll();showToast(`Imported ${items.length} item(s)`);
+  }catch(e){err.textContent='Error: '+e.message;}
+}
+
+// ── LOADOUT ──
+const LO_SLOTS=[{key:'rightHand',label:'Right Hand'},{key:'leftHand',label:'Left Hand'},{key:'rightHip',label:'Right Hip'},{key:'leftHip',label:'Left Hip'},{key:'back',label:'Back'},{key:'head',label:'Head'}];
+let loadout={};LO_SLOTS.forEach(s=>loadout[s.key]=null);
+let loActiveSlot=null,loClip=null,loChildClip=null;
+function nloSlot(){return{itemID:null,scaleModifier:0,colorHue:0,colorSaturation:0,ammo:0,state:0,children:[],grabPos:[0,0,0],grabRot:[0,0,0,1]};}
+function nloChild(){return{itemID:null,scaleModifier:0,colorHue:0,colorSaturation:0,ammo:0,state:0};}
+function renderLoadout(){
+  document.getElementById('loGrid').innerHTML=LO_SLOTS.map(s=>renderLoSlot(s)).join('');
+  renderList();
+  const hint=document.getElementById('loHint');
+  if(loActiveSlot){const s=LO_SLOTS.find(s=>s.key===loActiveSlot);hint.textContent=`Assigning ${s.label} — pick from library`;hint.style.color='var(--accent)';}
+  else{hint.textContent='Click a slot, then pick from library';hint.style.color='var(--muted)';}
+}
+function renderLoSlot(s){
+  const slot=loadout[s.key],isActive=loActiveSlot===s.key,filled=slot&&slot.itemID;
+  return`<div class="lo-slot${filled?' filled':''}${isActive?' selecting':''}" id="loSlot_${s.key}"><div class="lo-shdr"><span class="lo-sname">${s.label}</span>${isActive?`<span class="lo-badge">selecting</span>`:''}<span style="flex:1"></span>${filled?`<button class="ib copy" style="font-size:9px;width:20px;height:20px" onclick="loCopy('${s.key}')">C</button><button class="ib paste${loClip?' has-clip':''}" style="font-size:9px;width:20px;height:20px" onclick="loPaste('${s.key}')">P</button><button class="lo-clr" onclick="loClear('${s.key}')">x</button>`:''}</div><div class="lo-sbody">${filled?renderLoFilled(s.key,slot):renderLoEmpty(s.key)}</div></div>`;
+}
+function renderLoEmpty(key){return`<div class="lo-empty" onclick="loActivate('${key}')"><span>${loActiveSlot===key?'Pick an item from the library':'Click to assign item'}</span></div>`;}
+function renderLoFilled(key,slot){
+  const item=IM[slot.itemID],col=gc(slot.itemID);
+  const chOpts=`<option value="" disabled>— select —</option>`+OPTS;
+  return`<div class="lo-irow"><div class="lo-dot" style="background:${col}"></div><span class="lo-iname" style="color:${col}">${item?.name||slot.itemID}</span></div>
+<select class="lo-isel" onchange="loSetItem('${key}',this.value)"><option value="" disabled>— change item —</option>${OPTS.replace(`value="${slot.itemID}"`,`value="${slot.itemID}" selected`)}</select>
+<div class="lo-fields">
+  <div class="lo-field"><label>scale</label><div class="lo-frow"><input type="range" min="-128" max="127" value="${slot.scaleModifier}" oninput="loUpdSlot('${key}','scaleModifier',+this.value);this.nextElementSibling.textContent=this.value"><span class="lo-fval">${slot.scaleModifier}</span></div><input type="number" min="-128" max="127" value="${slot.scaleModifier}" onchange="loUpdSlot('${key}','scaleModifier',+this.value)"></div>
+  <div class="lo-field"><label>colorHue</label><div class="lo-frow"><input type="range" min="0" max="240" value="${slot.colorHue}" oninput="loUpdSlot('${key}','colorHue',+this.value);this.nextElementSibling.style.background=hs(+this.value,${slot.colorSaturation})"><div class="lo-hsw" style="background:${hs(slot.colorHue,slot.colorSaturation)}"></div></div><input type="number" min="0" max="240" value="${slot.colorHue}" onchange="loUpdSlot('${key}','colorHue',+this.value)"></div>
+  <div class="lo-field"><label>colorSat</label><div class="lo-frow"><input type="range" min="-128" max="127" value="${slot.colorSaturation}" oninput="loUpdSlot('${key}','colorSaturation',+this.value);this.nextElementSibling.textContent=this.value"><span class="lo-fval">${slot.colorSaturation}</span></div><input type="number" min="-128" max="127" value="${slot.colorSaturation}" onchange="loUpdSlot('${key}','colorSaturation',+this.value)"></div>
+  <div class="lo-field"><label>ammo</label><div class="lo-frow"><input type="range" min="0" max="255" value="${slot.ammo??0}" oninput="loUpdSlot('${key}','ammo',+this.value);this.nextElementSibling.textContent=this.value"><span class="lo-fval">${slot.ammo??0}</span></div><input type="number" min="0" max="255" value="${slot.ammo??0}" onchange="loUpdSlot('${key}','ammo',+this.value)"></div>
+  <div class="lo-field"><label>state</label><div class="lo-frow"><input type="range" min="0" max="255" value="${slot.state??0}" oninput="loUpdSlot('${key}','state',+this.value);this.nextElementSibling.textContent=this.value"><span class="lo-fval">${slot.state??0}</span></div><input type="number" min="0" max="255" value="${slot.state??0}" onchange="loUpdSlot('${key}','state',+this.value)"></div>
+</div>
+<div class="lo-children">
+  <div class="lo-ch-hdr"><span>Children (${slot.children.length})</span></div>
+  <div class="lo-ch-list">${slot.children.map((ch,ci)=>`<div class="lo-ch-item"><div class="lo-ch-top"><div class="lo-ch-dot" style="background:${gc(ch.itemID)}"></div><select class="lo-ch-sel" onchange="loSetChild('${key}',${ci},this.value)">${chOpts.replace(`value="${ch.itemID}"`,`value="${ch.itemID}" selected`)}</select><button class="lo-ch-del" onclick="loRemChild('${key}',${ci})">x</button></div></div>`).join('')}</div>
+  <button class="lo-addch" onclick="loAddChild('${key}')">+ Add Child Item</button>
+</div>`;
+}
+function loActivate(key){loActiveSlot=(loActiveSlot===key)?null:key;renderLoadout();}
+function loAssign(key,id){if(!loadout[key])loadout[key]=nloSlot();loadout[key].itemID=id;loActiveSlot=null;renderLoadout();renderJSON();showToast('Assigned '+gn(id));}
+function loClear(key){loadout[key]=null;if(loActiveSlot===key)loActiveSlot=null;renderLoadout();renderJSON();}
+function loSetItem(key,id){loadout[key].itemID=id;renderLoadout();renderJSON();}
+function loUpdSlot(key,f,v){loadout[key][f]=v;renderJSON();}
+function loAddChild(key){loadout[key].children.push(nloChild());renderLoadout();renderJSON();}
+function loSetChild(key,ci,id){loadout[key].children[ci].itemID=id;renderLoadout();renderJSON();}
+function loUpdChild(key,ci,f,v){loadout[key].children[ci][f]=v;renderJSON();}
+function loRemChild(key,ci){loadout[key].children.splice(ci,1);renderLoadout();renderJSON();}
+function loCopy(key){loClip=JSON.parse(JSON.stringify(loadout[key]));renderLoadout();showToast('Slot copied');}
+function loPaste(key){if(!loClip)return;loadout[key]=JSON.parse(JSON.stringify(loClip));renderLoadout();renderJSON();showToast('Slot pasted');}
+function buildLoadoutInner(){
+  const out={version:1};
+  LO_SLOTS.forEach(s=>{const sl=loadout[s.key];if(sl&&sl.itemID){const o={itemID:sl.itemID,scaleModifier:sl.scaleModifier,colorHue:sl.colorHue,colorSaturation:sl.colorSaturation,ammo:sl.ammo??0,state:sl.state??0};const ch=sl.children.filter(c=>c.itemID);if(ch.length)o.children=ch.map(c=>({itemID:c.itemID}));out[s.key]=o;}});
+  return out;
+}
+function buildLoadoutOut(){return{objects:[{collection:"user_inventory",key:"gameplay_loadout",permission_read:1,permission_write:1,value:JSON.stringify(buildLoadoutInner())}]};}
+function doLoadoutImport(){
+  const err=document.getElementById('loImportError');
+  try{
+    let d=JSON.parse(document.getElementById('loImportTA').value.trim());
+    if(typeof d==='string')d=JSON.parse(d);
+    if(d.objects&&d.objects[0])d=d.objects[0];
+    if(d.value)d=JSON.parse(d.value);
+    LO_SLOTS.forEach(s=>{if(d[s.key]){const sl=d[s.key];loadout[s.key]={itemID:sl.itemID||null,scaleModifier:sl.scaleModifier||0,colorHue:sl.colorHue||0,colorSaturation:sl.colorSaturation||0,ammo:sl.ammo||0,state:sl.state||0,children:(sl.children||[]).map(c=>({itemID:c.itemID||null,scaleModifier:c.scaleModifier||0,colorHue:c.colorHue||0,colorSaturation:c.colorSaturation||0,ammo:c.ammo||0,state:c.state||0})),grabPos:sl.grabPos||[0,0,0],grabRot:sl.grabRot||[0,0,0,1]};}else loadout[s.key]=null;});
+    loActiveSlot=null;closeModal('loImportModal');renderLoadout();renderJSON();showToast('Imported loadout');
+  }catch(e){err.textContent='Error: '+e.message;}
+}
+
+// ── LOADOUT BLUEPRINT ──
+const LOBP_SLOTS=[{key:'rightHand',label:'Right Hand'},{key:'leftHand',label:'Left Hand'},{key:'rightHip',label:'Right Hip'},{key:'leftHip',label:'Left Hip'},{key:'back',label:'Back'},{key:'head',label:'Head'}];
+let lobp={};LOBP_SLOTS.forEach(s=>lobp[s.key]=null);
+let lobpActiveSlot=null;
+function nLobpSlot(){return{itemID:null,scaleModifier:0,colorHue:0,colorSaturation:0,ammo:0,state:0,isBlueprint:false,grabPos:[0,0,0],grabRot:[0,0,0,1],children:[]};}
+function nLobpChild(){return{itemID:null,isBlueprint:false,pos:[0,0,0],rot:[0,0,0,1],posePos:[0,0,0],poseRot:[0,0,0,1]};}
+function renderLobp(){
+  document.getElementById('lobpGrid').innerHTML=LOBP_SLOTS.map(s=>renderLobpSlot(s)).join('');
+  renderList();
+  const hint=document.getElementById('lobpHint');
+  if(lobpActiveSlot){const s=LOBP_SLOTS.find(s=>s.key===lobpActiveSlot);hint.textContent=`Assigning ${s.label} — pick from library`;hint.style.color='var(--accent)';}
+  else{hint.textContent='Click a slot, then pick from library';hint.style.color='var(--muted)';}
+}
+function renderLobpSlot(s){
+  const slot=lobp[s.key],isActive=lobpActiveSlot===s.key,filled=slot&&slot.itemID;
+  return`<div class="lbp-slot${filled?' filled':''}${isActive?' selecting':''}" id="lobpSlot_${s.key}"><div class="lbp-shdr"><span class="lbp-sname">${s.label}</span>${isActive?`<span class="lbp-badge">selecting</span>`:''}<span style="flex:1"></span>${filled?`<button class="lbp-clr" onclick="lobpClear('${s.key}')">x</button>`:''}</div><div class="lbp-sbody">${filled?renderLobpFilled(s.key,slot):renderLobpEmpty(s.key)}</div></div>`;
+}
+function renderLobpEmpty(key){return`<div class="lbp-empty" onclick="lobpActivate('${key}')"><span>${lobpActiveSlot===key?'Pick an item from the library':'Click to assign item'}</span></div>`;}
+function renderLobpFilled(key,slot){
+  const item=IM[slot.itemID],col=gc(slot.itemID);
+  return`<div class="lbp-irow"><div class="lbp-dot" style="background:${col}"></div><span class="lbp-iname" style="color:${col}">${item?.name||slot.itemID}</span></div>
+<select class="lbp-isel" onchange="lobpSetItem('${key}',this.value)"><option value="" disabled>— change item —</option>${OPTS.replace(`value="${slot.itemID}"`,`value="${slot.itemID}" selected`)}</select>
+<div class="lbp-bptoggle"><input type="checkbox" id="lobpbp_${key}" ${slot.isBlueprint?'checked':''} onchange="lobpUpdSlot('${key}','isBlueprint',this.checked)"><label for="lobpbp_${key}">isBlueprint</label></div>
+<div class="lbp-fields">
+  <div class="lbp-field"><label>scale</label><div class="lbp-frow"><input type="range" min="-128" max="127" value="${slot.scaleModifier}" oninput="lobpUpdSlot('${key}','scaleModifier',+this.value);this.nextElementSibling.textContent=this.value"><span class="lbp-fval">${slot.scaleModifier}</span></div><input type="number" min="-128" max="127" value="${slot.scaleModifier}" onchange="lobpUpdSlot('${key}','scaleModifier',+this.value)"></div>
+  <div class="lbp-field"><label>colorHue</label><div class="lbp-frow"><input type="range" min="0" max="240" value="${slot.colorHue}" oninput="lobpUpdSlot('${key}','colorHue',+this.value)"><span class="lbp-fval">${slot.colorHue}</span></div><input type="number" min="0" max="240" value="${slot.colorHue}" onchange="lobpUpdSlot('${key}','colorHue',+this.value)"></div>
+  <div class="lbp-field"><label>state</label><div class="lbp-frow"><input type="range" min="0" max="255" value="${slot.state??0}" oninput="lobpUpdSlot('${key}','state',+this.value);this.nextElementSibling.textContent=this.value"><span class="lbp-fval">${slot.state??0}</span></div><input type="number" min="0" max="255" value="${slot.state??0}" onchange="lobpUpdSlot('${key}','state',+this.value)"></div>
+  <div class="lbp-field"><label>ammo</label><div class="lbp-frow"><input type="range" min="0" max="255" value="${slot.ammo??0}" oninput="lobpUpdSlot('${key}','ammo',+this.value);this.nextElementSibling.textContent=this.value"><span class="lbp-fval">${slot.ammo??0}</span></div><input type="number" min="0" max="255" value="${slot.ammo??0}" onchange="lobpUpdSlot('${key}','ammo',+this.value)"></div>
+</div>
+<div class="lbp-children">
+  <div class="lbp-ch-hdr"><span>Stuck Children (${slot.children.length})</span></div>
+  <div class="lbp-ch-list">${slot.children.map((ch,ci)=>`<div class="lbp-ch-item"><div class="lbp-ch-top"><div class="lbp-ch-dot" style="background:${gc(ch.itemID)}"></div><select class="lbp-ch-sel" onchange="lobpSetChild('${key}',${ci},this.value)"><option value="" disabled>— select —</option>${OPTS.replace(`value="${ch.itemID}"`,`value="${ch.itemID}" selected`)}</select><button class="lbp-ch-bp ${ch.isBlueprint?'on':''}" onclick="lobpToggleChildBp('${key}',${ci})" title="Toggle isBlueprint">${ch.isBlueprint?'BP':'bp'}</button><button class="lbp-ch-del" onclick="lobpRemChild('${key}',${ci})">x</button></div></div>`).join('')}
+  </div>
+  <button class="lbp-addch" onclick="lobpAddChild('${key}')">+ Add Stuck Child</button>
+</div>`;
+}
+function lobpActivate(key){lobpActiveSlot=(lobpActiveSlot===key)?null:key;renderLobp();}
+function lobpAssign(key,id){if(!lobp[key])lobp[key]=nLobpSlot();lobp[key].itemID=id;lobpActiveSlot=null;renderLobp();renderJSON();showToast('Assigned '+gn(id));}
+function lobpClear(key){lobp[key]=null;if(lobpActiveSlot===key)lobpActiveSlot=null;renderLobp();renderJSON();}
+function lobpSetItem(key,id){lobp[key].itemID=id;renderLobp();renderJSON();}
+function lobpUpdSlot(key,f,v){lobp[key][f]=v;renderLobp();renderJSON();}
+function lobpAddChild(key){lobp[key].children.push(nLobpChild());renderLobp();renderJSON();}
+function lobpSetChild(key,ci,id){lobp[key].children[ci].itemID=id;renderLobp();renderJSON();}
+function lobpRemChild(key,ci){lobp[key].children.splice(ci,1);renderLobp();renderJSON();}
+function lobpToggleChildBp(key,ci){lobp[key].children[ci].isBlueprint=!lobp[key].children[ci].isBlueprint;renderLobp();renderJSON();}
+function buildLobpInner(){
+  const out={version:1};
+  LOBP_SLOTS.forEach(s=>{
+    const sl=lobp[s.key];
+    if(sl&&sl.itemID){
+      const o={itemID:sl.itemID,scaleModifier:sl.scaleModifier,colorHue:sl.colorHue,colorSaturation:sl.colorSaturation,ammo:sl.ammo??0,state:sl.state??0,isBlueprint:sl.isBlueprint,grabPos:sl.grabPos,grabRot:sl.grabRot};
+      const ch=sl.children.filter(c=>c.itemID);
+      if(ch.length)o.stuckChildren=ch.map(c=>({item:{itemID:c.itemID,isBlueprint:c.isBlueprint},pos:c.pos,rot:c.rot,posePos:c.posePos,poseRot:c.poseRot}));
+      out[s.key]=o;
+    }
+  });
+  return out;
+}
+function buildLobpOut(){return{objects:[{collection:"user_inventory",key:"gameplay_loadout",permission_read:1,permission_write:1,value:JSON.stringify(buildLobpInner())}]};}
+function doLobpImport(){
+  const err=document.getElementById('lobpImportError');
+  try{
+    let d=JSON.parse(document.getElementById('lobpImportTA').value.trim());
+    if(typeof d==='string')d=JSON.parse(d);
+    if(d.objects&&d.objects[0])d=d.objects[0];
+    if(d.value)d=JSON.parse(d.value);
+    LOBP_SLOTS.forEach(s=>{
+      if(d[s.key]){
+        const sl=d[s.key];
+        lobp[s.key]={
+          itemID:sl.itemID||null,scaleModifier:sl.scaleModifier||0,colorHue:sl.colorHue||0,colorSaturation:sl.colorSaturation||0,
+          ammo:sl.ammo||0,state:sl.state||0,isBlueprint:sl.isBlueprint===true||sl.isBlueprint===undefined?false:false,
+          grabPos:sl.grabPos||[0,0,0],grabRot:sl.grabRot||[0,0,0,1],
+          children:(sl.stuckChildren||sl.children||[]).map(c=>{
+            const item=c.item||c;
+            return{itemID:item.itemID||null,isBlueprint:item.isBlueprint===true,pos:c.pos||[0,0,0],rot:c.rot||[0,0,0,1],posePos:c.posePos||[0,0,0],poseRot:c.poseRot||[0,0,0,1]};
+          })
+        };
+      }else lobp[s.key]=null;
+    });
+    lobpActiveSlot=null;closeModal('lobpImportModal');renderLobp();renderJSON();showToast('Loadout Blueprint imported');
+  }catch(e){err.textContent='Error: '+e.message;}
+}
+
+// ── BLUEPRINT ──
+let bpId='bp_1',bpName='My Blueprint',bpRootItem='',bpChildren=[],bpExpanded=new Set(),bpActiveNode=null;
+function nBpChild(){return{itemID:'',isBlueprint:true,pos:[0,0,0],rot:[0,0,0,0],posePos:[0,0,0],poseRot:[0,0,0,0],stuckChildren:[]};}
+function renderBlueprint(){
+  const area=document.getElementById('bpArea');
+  area.innerHTML=`
+<div class="bp-meta">
+  <div class="bp-meta-row"><label>ID</label><input value="${bpId}" oninput="bpId=this.value;renderJSON()"></div>
+  <div class="bp-meta-row"><label>Name</label><input value="${bpName}" oninput="bpName=this.value;renderJSON()"></div>
+</div>
+<div class="bp-meta" style="margin-bottom:10px;grid-template-columns:1fr;">
+  <div class="bp-meta-row"><label>Root Item</label>
+    <select style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-size:10px;font-family:'Share Tech Mono',monospace;outline:none;cursor:pointer;flex:1;" onchange="bpRootItem=this.value;renderBlueprint();renderJSON()"><option value="">— select root item —</option>${OPTS.replace(`value="${bpRootItem}"`,`value="${bpRootItem}" selected`)}</select>
+  </div>
+</div>
+${bpChildren.length?bpChildren.map((ch,ci)=>renderBpChild(ch,ci,`bp_ch_${ci}`)).join(''):'<div class="empty"><div class="et" style="color:#60a5fa">No stuck children yet</div><div class="et" style="opacity:.5">Click "+ Child" to add</div></div>'}`;
+  renderList();
+  if(bpActiveNode!==null){const h=document.getElementById('loHint');if(h){h.textContent='Blueprint: pick from library';h.style.color='#3b82f6';}}
+}
+function renderBpChild(ch,ci,key){
+  const exp=bpExpanded.has(ci);
+  const active=bpActiveNode===`child_${ci}`;
+  return`<div class="bp-node${active?' selecting':''}">
+<div class="bp-nhdr" onclick="bpToggle(${ci})">
+  <div class="bp-dot"></div>
+  <span class="bp-name">${gn(ch.itemID)||'— unset —'}</span>
+  <span class="bdg" style="color:#60a5fa">${ch.stuckChildren.length} nested</span>
+  <div class="arow" onclick="event.stopPropagation()">
+    <button class="ib" style="font-size:9px;color:#3b82f6;border-color:#3b82f644" onclick="bpActivateChild(${ci})" title="Pick from library">+</button>
+    <button class="ib" style="font-size:9px;color:${ch.isBlueprint?'#3b82f6':'var(--muted)'};border-color:${ch.isBlueprint?'#3b82f644':'var(--border)'}" onclick="bpToggleBp(${ci})" title="Toggle isBlueprint">${ch.isBlueprint?'BP':'bp'}</button>
+    <button class="ib del" style="font-size:9px" onclick="bpRemChild(${ci})">x</button>
+  </div>
+</div>
+${exp?`<div class="bp-body">
+  <select class="bp-isel" onchange="bpChildren[${ci}].itemID=this.value;renderBlueprint();renderJSON()"><option value="">— select item —</option>${OPTS.replace(`value="${ch.itemID}"`,`value="${ch.itemID}" selected`)}</select>
+  ${renderBpVecs(ci)}
+  <div class="bp-children">
+    <div class="bp-ch-hdr"><span>Stuck Children</span><button class="bp-add-ch" style="width:auto;padding:2px 8px" onclick="bpAddNested(${ci})">+ add</button></div>
+    ${ch.stuckChildren.map((n,ni)=>renderBpNested(n,ci,ni)).join('')}
+  </div>
+</div>`:''}
+</div>`;
+}
+function renderBpVecs(ci){
+  const ch=bpChildren[ci];
+  const vecs=[['pos','pos'],['rot','rot'],['posePos','posePos'],['poseRot','poseRot']];
+  return vecs.map(([lbl,key])=>`<div class="bp-vec"><label>${lbl}</label>${[0,1,2,key==='rot'||key==='poseRot'?3:-1].filter(x=>x>=0).map(vi=>`<input value="${ch[key][vi]??0}" type="number" step="0.001" oninput="bpChildren[${ci}].${key}[${vi}]=+this.value;renderJSON()">`).join('')}</div>`).join('');
+}
+function renderBpNested(n,ci,ni){
+  return`<div class="bp-nested-item">
+  <div class="bp-ch-top"><div class="bp-ch-dot"></div><span class="bp-ch-name" style="font-size:10px">${gn(n.itemID)||'— unset —'}</span>
+  <button class="ib" style="font-size:8px;width:20px;height:20px;color:${n.isBlueprint?'#3b82f6':'var(--muted)'};border-color:${n.isBlueprint?'#3b82f644':'var(--border)'}" onclick="bpToggleNestedBp(${ci},${ni})" title="Toggle isBlueprint">${n.isBlueprint?'BP':'bp'}</button>
+  <button class="bp-ch-del" onclick="bpChildren[${ci}].stuckChildren.splice(${ni},1);renderBlueprint();renderJSON()">x</button></div>
+  <select class="bp-ch-sel" onchange="bpChildren[${ci}].stuckChildren[${ni}].itemID=this.value;renderBlueprint();renderJSON()"><option value="">— select item —</option>${OPTS.replace(`value="${n.itemID}"`,`value="${n.itemID}" selected`)}</select>
+  ${[['pos','pos'],[`rot`,'rot'],['posePos','posePos'],['poseRot','poseRot']].map(([lbl,k])=>`<div class="bp-vec"><label>${lbl}</label>${[0,1,2,lbl==='rot'||lbl==='poseRot'?3:-1].filter(x=>x>=0).map(vi=>`<input value="${n[k][vi]??0}" type="number" step="0.001" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:2px 4px;border-radius:3px;font-size:8px;font-family:'Share Tech Mono',monospace;outline:none;flex:1;min-width:0;" oninput="bpChildren[${ci}].stuckChildren[${ni}].${k}[${vi}]=+this.value;renderJSON()">`).join('')}</div>`).join('')}
+</div>`;
+}
+function bpToggle(ci){bpExpanded.has(ci)?bpExpanded.delete(ci):bpExpanded.add(ci);renderBlueprint();}
+function bpActivateChild(ci){bpActiveNode=bpActiveNode===`child_${ci}`?null:`child_${ci}`;renderBlueprint();renderList();}
+function bpAssign(nodeKey,id){
+  if(nodeKey&&nodeKey.startsWith('child_')){const ci=+nodeKey.split('_')[1];bpChildren[ci].itemID=id;}
+  bpActiveNode=null;renderBlueprint();renderJSON();showToast('Assigned '+gn(id));
+}
+function bpToggleBp(ci){bpChildren[ci].isBlueprint=!bpChildren[ci].isBlueprint;renderBlueprint();renderJSON();}
+function bpToggleNestedBp(ci,ni){bpChildren[ci].stuckChildren[ni].isBlueprint=!bpChildren[ci].stuckChildren[ni].isBlueprint;renderBlueprint();renderJSON();}
+function bpAddChild(){bpChildren.push(nBpChild());bpExpanded.add(bpChildren.length-1);renderBlueprint();renderJSON();}
+function bpRemChild(ci){bpChildren.splice(ci,1);bpExpanded.delete(ci);renderBlueprint();renderJSON();}
+function bpAddNested(ci){bpChildren[ci].stuckChildren.push({itemID:'',isBlueprint:true,pos:[0,0,0],rot:[0,0,0,0],posePos:[0,0,0],poseRot:[0,0,0,0]});renderBlueprint();renderJSON();}
+function buildBpRootNode(itemID,stuckChildren){
+  const node={itemID:itemID||'',isBlueprint:true};
+  if(stuckChildren&&stuckChildren.length){node.stuckChildren=stuckChildren.map(ch=>({item:buildBpChildNode(ch),pos:ch.pos,rot:ch.rot,posePos:ch.posePos,poseRot:ch.poseRot}));}
+  return node;
+}
+function buildBpChildNode(ch){
+  const node={itemID:ch.itemID||'',isBlueprint:true};
+  if(ch.stuckChildren&&ch.stuckChildren.length){node.stuckChildren=ch.stuckChildren.map(n=>({item:{itemID:n.itemID||'',isBlueprint:true},pos:n.pos,rot:n.rot,posePos:n.posePos,poseRot:n.poseRot}));}
+  return node;
+}
+function buildBpInner(){
+  return{id:bpId,name:bpName,version:1,rootItem:buildBpRootNode(bpRootItem,bpChildren)};
+}
+function buildBpOut(){return{objects:[{collection:"user_blueprints",key:bpId,permission_read:1,permission_write:1,value:JSON.stringify(buildBpInner())}]};}
+function doBpImport(){
+  const err=document.getElementById('bpImportError');
+  try{
+    let d=JSON.parse(document.getElementById('bpImportTA').value.trim());
+    if(typeof d==='string')d=JSON.parse(d);
+    if(d.objects&&d.objects[0])d=d.objects[0];
+    if(d.value)d=JSON.parse(d.value);
+    bpId=d.id||'bp_1';bpName=d.name||'Imported';
+    const root=d.rootItem||{};
+    bpRootItem=root.itemID||'';
+    bpChildren=(root.stuckChildren||[]).map(sc=>({
+      itemID:sc.item?.itemID||'',isBlueprint:true,
+      pos:sc.pos||[0,0,0],rot:sc.rot||[0,0,0,0],posePos:sc.posePos||[0,0,0],poseRot:sc.poseRot||[0,0,0,0],
+      stuckChildren:(sc.item?.stuckChildren||[]).map(n=>({itemID:n.item?.itemID||'',isBlueprint:true,pos:n.pos||[0,0,0],rot:n.rot||[0,0,0,0],posePos:n.posePos||[0,0,0],poseRot:n.poseRot||[0,0,0,0]}))
+    }));
+    bpExpanded.clear();closeModal('bpImportModal');renderBlueprint();renderJSON();showToast('Blueprint imported');
+  }catch(e){err.textContent='Error: '+e.message;}
+}
+
+// ── LOADOUT TEMPLATE ──
+const LT_SLOTS=[{key:'rightHand',label:'Right Hand'},{key:'leftHand',label:'Left Hand'},{key:'rightHip',label:'Right Hip'},{key:'leftHip',label:'Left Hip'},{key:'back',label:'Back'},{key:'head',label:'Head'}];
+let ltmpl={};LT_SLOTS.forEach(s=>ltmpl[s.key]=null);
+let ltId='loadout_slot_1',ltWeight=10,ltActiveSlot=null;
+function nLtSlot(){return{itemID:null,children:[]};}
+function nLtChild(){return{itemID:null};}
+function renderLtmpl(){
+  const area=document.getElementById('ltArea');
+  area.innerHTML=`<div class="lt-meta">
+    <label>ID</label><input value="${ltId}" oninput="ltId=this.value;renderJSON()" style="width:130px">
+    <label style="margin-left:8px">Weight</label><input type="number" value="${ltWeight}" min="1" oninput="ltWeight=+this.value;renderJSON()" style="width:60px">
+  </div>
+  <div class="lt-slots">${LT_SLOTS.map(s=>renderLtSlot(s)).join('')}</div>`;
+  renderList();
+  const hint=document.getElementById('ltHint');
+  if(ltActiveSlot){const s=LT_SLOTS.find(s=>s.key===ltActiveSlot);hint.textContent=`Assigning ${s.label} — pick from library`;hint.style.color='#a78bfa';}
+  else{hint.textContent='Click a slot, then pick from library';hint.style.color='var(--muted)';}
+}
+function renderLtSlot(s){
+  const slot=ltmpl[s.key],isActive=ltActiveSlot===s.key,filled=slot&&slot.itemID;
+  return`<div class="lt-slot${filled?' filled':''}${isActive?' selecting':''}" id="ltSlot_${s.key}"><div class="lt-shdr"><span class="lt-sname">${s.label}</span>${isActive?`<span class="lt-badge">selecting</span>`:''}<span style="flex:1"></span>${filled?`<button class="lt-clr" onclick="ltClear('${s.key}')">x</button>`:''}</div><div class="lt-sbody">${filled?renderLtFilled(s.key,slot):renderLtEmpty(s.key)}</div></div>`;
+}
+function renderLtEmpty(key){return`<div class="lt-empty" onclick="ltActivate('${key}')"><span>${ltActiveSlot===key?'Pick from library':'Click to assign'}</span></div>`;}
+function renderLtFilled(key,slot){
+  const col=gc(slot.itemID);
+  return`<div class="lt-irow"><div class="lt-dot" style="background:${col}"></div><span class="lt-iname" style="color:${col}">${gn(slot.itemID)}</span></div>
+<select class="lt-isel" onchange="ltSetItem('${key}',this.value)"><option value="" disabled>— change item —</option>${OPTS.replace(`value="${slot.itemID}"`,`value="${slot.itemID}" selected`)}</select>
+<div class="lt-ch-hdr"><span>Children (${slot.children.length})</span></div>
+<div class="lt-ch-list">${slot.children.map((ch,ci)=>`<div class="lt-ch-item"><div class="lt-ch-dot" style="background:${gc(ch.itemID)}"></div><select class="lt-ch-sel" onchange="ltSetChild('${key}',${ci},this.value)"><option value="" disabled>— select —</option>${OPTS.replace(`value="${ch.itemID}"`,`value="${ch.itemID}" selected`)}</select><button class="lt-ch-del" onclick="ltRemChild('${key}',${ci})">x</button></div>`).join('')}
+</div>
+<button class="lt-addch" onclick="ltAddChild('${key}')">+ Add Child</button>`;
+}
+function ltActivate(key){ltActiveSlot=(ltActiveSlot===key)?null:key;renderLtmpl();}
+function ltAssign(key,id){if(!ltmpl[key])ltmpl[key]=nLtSlot();ltmpl[key].itemID=id;ltActiveSlot=null;renderLtmpl();renderJSON();showToast('Assigned '+gn(id));}
+function ltClear(key){ltmpl[key]=null;if(ltActiveSlot===key)ltActiveSlot=null;renderLtmpl();renderJSON();}
+function ltSetItem(key,id){ltmpl[key].itemID=id;renderLtmpl();renderJSON();}
+function ltAddChild(key){ltmpl[key].children.push(nLtChild());renderLtmpl();renderJSON();}
+function ltSetChild(key,ci,id){ltmpl[key].children[ci].itemID=id;renderLtmpl();renderJSON();}
+function ltRemChild(key,ci){ltmpl[key].children.splice(ci,1);renderLtmpl();renderJSON();}
+function buildLtInner(){
+  const lo={version:1};
+  LT_SLOTS.forEach(s=>{const sl=ltmpl[s.key];if(sl&&sl.itemID){const o={itemID:sl.itemID};const ch=sl.children.filter(c=>c.itemID);if(ch.length)o.children=ch.map(c=>({itemID:c.itemID}));lo[s.key]=o;}});
+  return{id:ltId,totalWeight:ltWeight,loadout:lo};
+}
+function buildLtOut(){return{objects:[{collection:"user_loadout_templates",key:ltId,permission_read:1,permission_write:1,value:JSON.stringify(buildLtInner())}]};}
+function doLtImport(){
+  const err=document.getElementById('ltImportError');
+  try{
+    let d=JSON.parse(document.getElementById('ltImportTA').value.trim());
+    if(typeof d==='string')d=JSON.parse(d);
+    if(d.objects&&d.objects[0])d=d.objects[0];
+    if(d.value)d=JSON.parse(d.value);
+    ltId=d.id||'loadout_slot_1';ltWeight=d.totalWeight||10;
+    const lo=d.loadout||d;
+    LT_SLOTS.forEach(s=>{if(lo[s.key]){const sl=lo[s.key];ltmpl[s.key]={itemID:sl.itemID||null,children:(sl.children||[]).map(c=>({itemID:c.itemID||null}))};}else ltmpl[s.key]=null;});
+    ltActiveSlot=null;closeModal('ltImportModal');renderLtmpl();renderJSON();showToast('Template imported');
+  }catch(e){err.textContent='Error: '+e.message;}
+}
+
+// ── AUTO STASH POS ──
+function autoStashPos(){items.forEach((it,i)=>{it.stashPos=STASH_POS[Math.min(i,STASH_POS.length-1)];});renderAll();showToast('stashPos auto-assigned');}
+
+// ── DUPLICATE ──
+function cloneItem(it){return JSON.parse(JSON.stringify(it));}
+function dupItem(ti){
+  const clone=cloneItem(items[ti]);
+  clone.stashPos=STASH_POS[Math.min(items.length,STASH_POS.length-1)];
+  items.splice(ti+1,0,clone);
+  const ne=new Set(),nc=new Set();
+  expTL.forEach(i=>{if(i<ti+1)ne.add(i);else ne.add(i+1);});
+  expCH.forEach(k=>{const[a,b]=k.split('-').map(Number);if(a<ti+1)nc.add(k);else nc.add(`${a+1}-${b}`);});
+  expTL=ne;expCH=nc;ne.add(ti+1);expTL=ne;
+  renderAll();showToast('Duplicated');
+}
+
+// ── RANDOMIZE SINGLE ──
+let itemClip=null,childClip=null;
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function rndFields(){return{scaleModifier:rnd(-128,127),colorHue:rnd(0,240),colorSaturation:rnd(-128,127),ammo:0,state:0};}
+const BAG_IDS=ITEMS.filter(i=>i.sub==='Bags').map(i=>i.id);
+const NON_BAG_IDS=ITEMS.filter(i=>i.sub!=='Bags').map(i=>i.id);
+const LARGE_BAG_IDS=['item_backpack_large_base','item_backpack_large_basketball','item_backpack_large_clover'];
+const CHILD_CONTAINER_IDS=['item_crossbow','item_crossbow_heart'];
+const CONTAINER_IDS=[...BAG_IDS,...CHILD_CONTAINER_IDS];
+function rndChild(){return{...nchild(),...rndFields(),itemID:NON_BAG_IDS[rnd(0,NON_BAG_IDS.length-1)]};}
+function rndLargeBagItem(){return LARGE_BAG_IDS[rnd(0,LARGE_BAG_IDS.length-1)];}
+function rndTLItem(){
+  const isContainer=Math.random()<0.6;
+  const id=isContainer?CONTAINER_IDS[rnd(0,CONTAINER_IDS.length-1)]:ITEMS[rnd(0,ITEMS.length-1)].id;
+  const it={itemID:id,...rndFields(),stashPos:0};
+  if(isContainer)it.children=Array.from({length:23},()=>rndChild());
+  return it;
+}
+function rndSingleItem(ti){
+  const isCont=Array.isArray(items[ti].children);
+  const id=isCont?CONTAINER_IDS[rnd(0,CONTAINER_IDS.length-1)]:ITEMS[rnd(0,ITEMS.length-1)].id;
+  items[ti]={...items[ti],...rndFields(),itemID:id};
+  if(isCont)items[ti].children=Array.from({length:23},()=>rndChild());
+  renderAll();
+}
+
+// ── DRAG TO REORDER ──
+let dragTi=null;
+function dragStart(e,ti){dragTi=ti;e.dataTransfer.effectAllowed='move';setTimeout(()=>document.querySelector(`[data-ti="${ti}"]`)?.classList.add('dragging'),0);}
+function dragOver(e,ti){e.preventDefault();if(ti===dragTi)return;document.querySelectorAll('.tlitem').forEach(el=>el.classList.remove('drag-over'));document.querySelector(`[data-ti="${ti}"]`)?.classList.add('drag-over');}
+function dragLeave(){document.querySelectorAll('.tlitem').forEach(el=>el.classList.remove('drag-over'));}
+function dragDrop(e,ti){e.preventDefault();if(dragTi===null||dragTi===ti)return;const moved=items.splice(dragTi,1)[0];items.splice(ti,0,moved);expTL.clear();expCH.clear();renderAll();}
+function dragEnd(){dragTi=null;document.querySelectorAll('.tlitem').forEach(el=>el.classList.remove('drag-over','dragging'));}
+
+// ── CLIPBOARD ──
+function copyItem(ti){itemClip=cloneItem(items[ti]);renderEditor();showToast('Item copied');}
+function pasteItem(ti){if(!itemClip)return;const p=items[ti].stashPos;items[ti]=cloneItem(itemClip);items[ti].stashPos=p;renderAll();showToast('Item pasted');}
+function copyChild(ti,ci){childClip=cloneItem(items[ti].children[ci]);renderEditor();showToast('Child copied');}
+function pasteChild(ti,ci){if(!childClip)return;items[ti].children[ci]=cloneItem(childClip);renderAll();showToast('Child pasted');}
+
+// ── RANDOMIZE ──
+function randomizeAll(){
+  if(mode==='stash'){
+    const first={itemID:'item_backpack_large_base',...rndFields(),stashPos:0,children:Array.from({length:23},()=>rndChild())};
+    items=[first,...Array.from({length:22},()=>rndTLItem())];
+    items.forEach((it,i)=>{it.stashPos=STASH_POS[Math.min(i,STASH_POS.length-1)];});
+    expTL.clear();expCH.clear();renderAll();showToast('Stash randomized!');
+  } else if(mode==='loadout'){
+    LO_SLOTS.forEach(s=>{const sl=nloSlot();sl.itemID=rndLargeBagItem();Object.assign(sl,rndFields());sl.children=Array.from({length:23},()=>({...rndChild()}));loadout[s.key]=sl;});
+    loActiveSlot=null;renderLoadout();renderJSON();showToast('Loadout randomized!');
+  }
+}
+
+// ── TOOLTIP ──
+let tipTimer=null;
+function showTip(e,id){
+  clearTimeout(tipTimer);
+  tipTimer=setTimeout(()=>{
+    const item=IM[id];if(!item)return;
+    const tip=document.getElementById('tooltip');
+    const desc=item.desc||'';
+    tip.innerHTML=`<div class="tip-name">${item.name}</div><div class="tip-cat" style="color:${CC[item.cat]||'#888'}">${item.cat}${item.sub?` / ${item.sub}`:''}</div>${desc?`<div class="tip-desc">${desc}</div>`:''}`;
+    const r=e.target.closest('.icard').getBoundingClientRect();
+    tip.style.left=(r.right+8)+'px';
+    tip.style.top=Math.min(r.top,window.innerHeight-tip.offsetHeight-8)+'px';
+    tip.classList.add('show');
+  },300);
+}
+function hideTip(){clearTimeout(tipTimer);document.getElementById('tooltip').classList.remove('show');}
+
+// ── COLLAPSE / EXPAND ALL ──
+function collapseAll(){expTL.clear();expCH.clear();renderAll();}
+function expandAll(){items.forEach((_,i)=>expTL.add(i));renderAll();}
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown',e=>{
+  const tag=document.activeElement.tagName;
+  if(tag==='INPUT'||tag==='SELECT'||tag==='TEXTAREA')return;
+  const ctrl=e.ctrlKey||e.metaKey;if(!ctrl)return;
+  switch(e.key){
+    case ',':e.preventDefault();collapseAll();break;
+    case '.':e.preventDefault();expandAll();break;
+    case 'c':e.preventDefault();copyJSON();break;
+    case 'r':e.preventDefault();randomizeAll();break;
+    case 'z':e.preventDefault();showToast('Undo not yet implemented');break;
+  }
+});
+
+// close modals on backdrop click
+['importModal','loImportModal','bpImportModal','lobpImportModal','ltImportModal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal(id);});
+});
+
+init();
+</script>
+</body>
+</html>
